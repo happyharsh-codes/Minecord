@@ -1,93 +1,65 @@
 import discord
 from discord.ext import commands, tasks
-from cogs.functions.function import Func
-from cogs.functions.events import Events
-from cogs.functions.game_functions import GameFunction
-import os
-import time
-import json
-import asyncio
-from dislash import InteractionClient
-from itertools import cycle
-from PIL import Image
-from io import BytesIO
-
+import asyncio, os
+from functions.events import Events
+from functions.game_functions import*
+from config import *
 from keep_alive import keep_alive
-intents = discord.Intents(messages = True, guilds = True, dm_messages = True, members = True, presences = True, dm_reactions = True, reactions = True, emojis = True ) 
-client = commands.Bot(command_prefix=['m! ','m!'],case_insensetive=True,  help_command=None, intents = intents )
-slash = InteractionClient(client) 
-pfp = cycle([ "pick.png","grass.png", "discomine.jpg"])
-profiles = "cogs/functions/main_resources/profiles.json" 
-
-events = Func(client)
+    
+intents = discord.Intents(messages = True, guilds = True, dm_messages = True, members = True, presences = True, dm_reactions = True, reactions = True, emojis = True, emojis_and_stickers = True, message_content = True) 
+client = commands.Bot(command_prefix= 'm!', case_insensitive=True, help_command=None, intents = intents )
 event = Events(client)
-game = GameFunction()
 
-#------On Ready------#
+#-----On Ready-----#
 @client.event
 async def on_ready():
-  print("We are ready to go!")
-  await client.change_presence(activity= discord.Game("Minecraft"))
-  loop_health.start(client)
+    print(f"Bot is ready. Logged in as {client.user}")
+    print("We are ready to go!")
+    await client.change_presence(activity=discord.Game(name="Minecraft"))
+    loop.start()
+    dumping_loop.start()
 
+#-----Loop-----#
 @tasks.loop(seconds=20)
-async def change_pfp():
-  print("Pfp changed")
-  source = next(pfp)
-  print(source, type(source))
-  with open(source, "rb")as image:
-    data = BytesIO(image.read())
-    image = Image.open(data)
-    await client.user.edit(avatar=image)
+async def loop():
+    print("Updating messages")
+    for msg in message:
+        if message[msg][2] == "loc_change":
+            pass
+        elif message[msg][2] == "health_change":
+            pass
+        em = message[msg][3]
+        em.footer.text=f"Updated at {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}"
+        await msg.edit(embed=em)
+        if message[msg][1] != None:
+            await message[msg][1].edit(embed=em)
 
-@tasks.loop(seconds= 100)
-async def loop_health(client):
-  with open(profiles, "r") as f:
-    profile = json.load(f)
-  for id in profile:
-    if profile[id]["food"] == 100:
-      if profile[id]["health"] != profile[id]["max_health"]:
-        profile[id]["health"] += 2
-    elif profile[id]["food"] == 0:
-      profile[id]["health"] -= 2
-      if profile[id]["health"] == 0:
-        await game.kill()
-      elif profile[id]["health"] < 30:
-        try:
-          user=client.get_user(int(id))
-          await user.send(f"{user.mention} your health is very low\nTry eating something.")
-        except Exception as e:
-          print(e)
-  with open(profiles, "w") as f:
-    json.dump(profile, f, indent=4)
-    
-#-------Events-------#
+@tasks.loop(minutes=1)
+async def dumping_loop():
+    print("dumping files")
+    with open("data.json", "w") as f:
+        json.dump(data,f,indent=4)
+    with open("messages.json", "w") as f:
+        json.dump(message,f,indent=4)
+    with open("server.json", "w") as f:
+        json.dump(server,f,indent=4)
+
+#-----Events-----#
 client.event(event.on_message)
+client.event(event.on_guild_join)
 client.event(event.on_guild_leave)
 client.event(event.on_command_error)
 client.event(event.on_command_completion)
-client.event(event.on_guild_channel_delete)
-client.event(event.on_guild_join)
+client.event(event.on_disconnect)
+client.event(event.on_error)
 
-#------Running------#
-if __name__ == '__main__':
-    for filename in os.listdir("./cogs"):
-        if filename.endswith(".py"): 
-            client.load_extension(f"cogs.{filename[:-3]}")
-            print(f" • Loaded Cog : {filename}", end = "\r")
-            time.sleep(.5)  
-    files = ["info", "help", "profiles", "channels", "restricted_channels"]
-    json_file = ""
-    for file in files:        
-      with open(f"cogs/functions/main_resources/{file}.json", "r") as f:
-          try: 
-            info = json.load(f)  
-          except Exception as e:
-            print(f"{file}.json :\n ", e)
-            print("\nAborting Mission....")
-            exit()
-    print("\n • All files working properly \n")
-    keep_alive()
- 
-    client.run(os.environ['TOKEN'])
-      
+async def load_cogs():
+    await client.load_extension("cogs.Activity")
+    await client.load_extension("cogs.Help")
+
+async def main():
+    async with client:
+        await load_cogs()  # Load cogs before running the bot
+        await client.start(os.getenv("TOKEN"))  # Start the bot
+
+asyncio.run(main())

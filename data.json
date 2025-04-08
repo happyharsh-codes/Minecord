@@ -1,0 +1,30 @@
+{
+    "894072003533877279": {
+        "name": "happyharsh.",
+        "diff": "hard",
+        "inv": {
+            "log": 4,
+            "raw_porkchop": 1
+        },
+        "tools": {},
+        "armour": {},
+        "location": "home",
+        "world": "over",
+        "inv_size": 25,
+        "level": 0,
+        "xp": 1,
+        "health": 100,
+        "food": 100,
+        "max_health": 100,
+        "builds": [],
+        "places": [
+            "ocean"
+        ],
+        "adv": [],
+        "log": {
+            "hunt": 4,
+            "chop": 3,
+            "adv": 1
+        }
+    }
+}

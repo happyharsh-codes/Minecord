@@ -1,17 +1,15 @@
-import discord
-from discord.ext import commands
-from .functions.function import Func
 import json
-func = Func()
+import discord
+import datetime
+from discord.ext import commands
 
-# Help Command
 class Help(commands.Cog):
     def __init__(self, client):
         self.client = client
-
+        
     @commands.command()
     async def help(self, ctx,*, cmd=None):
-        with open ("main_resources//help.json", 'r') as f:
+        with open ("help.json", 'r') as f:
                 help = json.load(f)
         if cmd is None:
             cmd = "Help" 
@@ -19,8 +17,6 @@ class Help(commands.Cog):
             "Over World Commands": "```cave, fish, crop, enchant, trade, take, chest, build```",
             "Game Settings Commands": "```start, delete, change_name```",
             "Setup Commands": "```quick_setup, auto_setup, add_restricted_chan, set_over_chan, set_nether_chan, set_end_chan```"}
-            await func.send_embed(ctx, cmd+" Command",'',"green",fields=fields_dict, footer=True )
-            return 
         else:    
             if not cmd in help:
                 await ctx.send(f"No help command for {cmd} found.")
@@ -29,7 +25,12 @@ class Help(commands.Cog):
                 if cmd.lower() in help_cmd:
                     fields_dict = {help_cmd: help[help_cmd]}
                     break                 
-        await func.send_embed(ctx, cmd+" Command",'',"green",fields=fields_dict, footer=True)
-      
-def setup(client):
-    client.add_cog(Help(client))
+        em = discord.Embed(title="Help",color=discord.Color.green())
+        for i in fields_dict:
+            em.add_field(name=i, value= fields_dict[i])
+        em.set_footer(text=f"requested by {ctx.author.name} at  {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+        await ctx.reply(embed=em)
+        
+        
+async def setup(bot):
+    await bot.add_cog(Help(bot))
