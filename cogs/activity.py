@@ -330,7 +330,7 @@ class Activity(commands.Cog):
                     await location_changer(ctx, location=places[index], world=world)
                     for item in view.children:
                         item.disabled = True
-                    await interaction.response.edit_message("You went on the journey",view=view)
+                    await interaction.response.edit_message(content="You went on the journey",view=view)
                     return
                 if label == "button_prev":
                     index -= 1

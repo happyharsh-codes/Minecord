@@ -5,6 +5,8 @@ from functions.events import Events
 from functions.game_functions import*
 from config import *
 from keep_alive import keep_alive
+from dotenv import load_dotenv
+load_dotenv()
     
 intents = discord.Intents(messages = True, guilds = True, dm_messages = True, members = True, presences = True, dm_reactions = True, reactions = True, emojis = True, emojis_and_stickers = True, message_content = True) 
 client = commands.Bot(command_prefix= 'm!', case_insensitive=True, help_command=None, intents = intents )
@@ -66,12 +68,12 @@ client.event(event.on_disconnect)
 client.event(event.on_error)
 
 async def load_cogs():
-    await client.load_extension("cogs.Activity")
-    await client.load_extension("cogs.Help")
+    await client.load_extension("cogs.activity")
+    await client.load_extension("cogs.help")
 
 async def main():
     async with client:
         await load_cogs()  # Load cogs before running the bot
         await client.start(os.getenv("TOKEN"))  # Start the bot
-
+keep_alive()
 asyncio.run(main())
