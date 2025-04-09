@@ -165,7 +165,7 @@ def food(ctx):
     half_food = "<:half_food:914829417501589546>"
     user_food = ""
     if foods == 100:
-        user_food = food*10
+        user_food = foode*10
         return user_food
     for i in range(1,foods+1):
         if (i % 10) == 0:
@@ -267,3 +267,16 @@ def equipt_armour(ctx, armour):
 async def kill(id, user, reason):
     del data[id]
     await user.send(embed=discord.Embed(title="YOU DIED!",description=reason + "\n You can start a new game using m!start command",color=discord.Color.red()).set_footer(text=f"{user.name} died at  {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}", icon_url=user.avatar))
+
+def mining_result(ctx, tool):
+    shaft_mine = build_searcher(ctx, 'shaft_mine')
+    if shaft_mine:
+        blocks = ["cobblestone", "iron_ore", "coal", "diorite", "andesite", "gravel", "diamond", "gold_ore", "emerald", "restone_dust", "lapiz_lazuli"]
+    else:
+        blocks = ["cobblestone", "iron_ore", "coal", "diorite", "andesite", "gravel", "gold_ore"]
+    no_of_blocks = random.randint(1,6)
+    blocks = random.choices(blocks,k=no_of_blocks)
+    blocks_dict = {}
+    for block in blocks:
+        blocks_dict[block] = random.randint(1,20)
+    return blocks_dict

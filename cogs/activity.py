@@ -61,11 +61,12 @@ class Activity(commands.Cog):
     async def inventory(self, ctx):
         '''Views users inventory'''
         inv = data[str(ctx.author.id)]["inv"]
+        tools = data[str(ctx.author.id)]["tools"]
         if inv == []:
             await ctx.reply("You don't have anything in your inventory haha 😆")
             return
         inv_size = data[str(ctx.author.id)]["inv_size"]
-        tools_size = len(data[str(ctx.author.id)]["tools"])
+        tools_size = len(tools)
         import math
         em = Embed(title=f"{ctx.author.name} Inventory",color=discord.Colour.green())
         fill = tools_size
@@ -75,7 +76,8 @@ class Activity(commands.Cog):
             else:
                 fill += 1
         em.set_footer(text=f"Showing {ctx.author.name}'s inventory: {fill} out of {inv_size}", icon_url=ctx.author.avatar)
-        for target, item in enumerate(inv):
+        target = 1
+        for item in inv:
             emoji = info["id"][item]
             name = item.replace("_", " ").capitalize()
             type = "unknown"
@@ -85,9 +87,18 @@ class Activity(commands.Cog):
                     break
             if inv[item] > 64:
                 for i in range(math.ceil(inv[item]/64)):
-                    em.add_field(name = f"{target+1}) {emoji} {name} x {64 if i != math.ceil(inv[item])else inv[item]%64}", value= f"    ID -  _{item}_ - {type} - [Click here for item info](https://minecraft_wiki.com/)", inline=False)
+                    em.add_field(name = f"{target}) {emoji} {name} x {64 if i != math.ceil(inv[item])-1 else inv[item]%64}", value= f"    ID -  *{item}* - {type} - [Click here for item info](https://minecraft_wiki.com/)", inline=False)
+                    target +=1
             else:      
-                em.add_field(name = f"{target+1}) {emoji} {name} x {inv[item]}", value= f"    ID - _{item}_ - {type} - [Click here for item info](https://minecraft_wiki.com/)", inline=False)
+                em.add_field(name = f"{target}) {emoji} {name} x {inv[item]}", value= f"    ID - *{item}* - {type} - [Click here for item info](https://minecraft_wiki.com/)", inline=False)
+                target += 1
+        for tool in tools:
+            emoji = info["id"][tool]
+            name = tool.replace("_", " ").capitalize()
+            type = tool.split("_")[1]
+            em.add_field(name = f"{target}) {emoji} {name}", value= f"    ID -  *{tool}* - {type} - [Click here for item info](https://minecraft_wiki.com/)", inline=False)
+            target += 1
+
         await ctx.reply(embed=em)
         
     @commands.command()
@@ -103,7 +114,7 @@ class Activity(commands.Cog):
         pages = len(pickaxe)
         index = 0
         em = Embed(title="Mining",color=Color.green())
-        em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][pickaxe[0]].split(":")[2]}.png")
+        em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][pickaxe[index]].split(":")[2][:-1]}.png")
         em.set_footer(text=f"Showing pickaxe {index+1}//{pages}", icon_url=ctx.author.avatar)
         
         button_prev = Button(style=ButtonStyle.blurple,label="«",disabled=True, custom_id="button_prev")
@@ -118,6 +129,7 @@ class Activity(commands.Cog):
         msg = await ctx.reply(embed=em, view=view)  
       
         async def button_callback(interaction: discord.Interaction):
+            nonlocal em, pickaxe, index, view
             if interaction.user != ctx.author:
                 return
             label = interaction.data["custom_id"]
@@ -126,21 +138,26 @@ class Activity(commands.Cog):
                 for children in view.children:
                     children.disabled = True
                 await interaction.response.edit_message(embed=em,view=view)
-                em = Embed(title=f"{ctx.author.name} went on Mining", description=f"You went on for mining using {pickaxe[index]}.\n Use the ```m!return``` command to return home",color=Color.green())
+                em = Embed(title=f"{ctx.author.name} went on Mining", description=f"You went on for mining using {pickaxe[index].replace("_"," ").capitalize()}.\n{info["id"]["progress_filled"]}{info["id"]["progress_empty"]*9}\n Use the _m!return_ command to return home",color=Color.green())
                 em.set_footer(text=f"Updated at {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
                 msg_send = await ctx.reply(embed=em)
-                msg_dm = await ctx.user.send(embed=em)
-                message[msg_send] = [msg_send, msg_dm, "mining", []]
+                try:
+                    msg_dm = await ctx.author.send(embed=em)
+                except Exception as e:
+                   msg_dm = None
+                   print(e)
+                message[msg_send] = [msg_send, msg_dm, em, 1, ctx, pickaxe[index]]
                 log_cmd(ctx,"mine")
                 return
-            elif label == "«":
+            elif label == "button_prev":
                 index -= 1
             else:
                 index +=1
             button_prev.disabled = index == 0
             button_next.disabled = index == pages-1
-            em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][pickaxe[index]].split(":")[2]}.png")
-            em.footer.text =f"Showing pickaxe {index+1}//{pages}"
+            mine_button.label = f"Use {pickaxe[index].replace("_"," ").capitalize()}"
+            em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][pickaxe[index]].split(":")[2][:-1]}.png")
+            em.set_footer(text=f"Showing pickaxe {index+1}//{pages}", icon_url=ctx.author.avatar)
             await interaction.response.edit_message(embed = em, view = view)
 
         async def on_timeout():
@@ -150,7 +167,7 @@ class Activity(commands.Cog):
         
         button_prev.callback = button_callback
         button_next.callback = button_callback
-        mine_button = button_callback
+        mine_button.callback = button_callback
         view.on_timeout = on_timeout
         
     @commands.command()
@@ -167,7 +184,7 @@ class Activity(commands.Cog):
         pages = len(foods)
         index = 0
         em = Embed(title="Eating",description=f"***{info["id"][foods[index]]}{foods[index].replace("_"," ").capitalize()} X {inv[foods[index]]}***\n\n"+hearts(ctx)+"\n"+food(ctx),color=Color.green())
-        em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][foods[index]].split(":")[2]}.png")
+        em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][foods[index]].split(":")[2][:-1]}.png")
         em.set_footer(text=f"Showing food {index+1}//{pages}", icon_url=ctx.author.avatar)
         
         button_prev = Button(style=ButtonStyle.blurple,label="«",disabled=True, custom_id="button_prev")
@@ -182,15 +199,19 @@ class Activity(commands.Cog):
         msg = await ctx.reply(embed=em, view=view)  
         
         async def button_callback(interaction: discord.Interaction):
-            nonlocal not_eatables, foods, index, em
-            if interaction.user.id != ctx.author.id:
+            nonlocal not_eatables, foods, index, em, view, pages, inv
+            if interaction.user != ctx.author:
                 return
             label = interaction.data["custom_id"]
+            print("going")
             if label == "eat_button":
                 health_increase = random.randint(1,10)
                 food_level(ctx,health_increase)
                 await add_item(ctx, ctx.author.id, foods[index], -1)
                 inv = data[str(ctx.author.id)]["inv"]
+                if data[str(ctx.author.id)]["food"] == 100:
+                    await interaction.response.edit_message(content="You are full now. You cant eat any more 🤢",embed=None, view=None)
+                    return
                 if foods[index] not in inv:
                     index -= 1
                     if index < 0:
@@ -201,27 +222,25 @@ class Activity(commands.Cog):
                     await interaction.response.edit_message(content="You have no more item in inventory to eat", embed = None, view = None)
                     return
                 em.description=f"***{info["id"][foods[index]]}{foods[index].replace("_"," ").capitalize()} X {inv[foods[index]]}***\n"+hearts(ctx)+"\n"+food(ctx)
-                em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][foods[index]].split(":")[2]}.png")
+                em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][foods[index]].split(":")[2][:-1]}.png")
                 em.set_footer(text=f"Showing food {index+1}//{pages}", icon_url=ctx.author.avatar)
                 button_prev.disabled = index == 0
                 button_next.disabled = index == pages-1
+                await interaction.response.edit_message(embed=em,view=view)
                 return
-            elif label == "«":
+            elif label == "button_prev":
                 index -= 1
             else:
                 index +=1
             button_prev.disabled = index == 0
             button_next.disabled = index == pages-1
-            em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][food[index]].split(":")[2]}.png")
-            em.description=f"***{foods[index].replace("_"," ").capitalize()} X {inv[foods[index]]}***"
+            em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][foods[index]].split(":")[2][:-1]}.png")
+            em.description=f"***{info["id"][foods[index]]}{foods[index].replace("_"," ").capitalize()} X {inv[foods[index]]}***\n"+hearts(ctx)+"\n"+food(ctx)
             em.set_footer(text=f"Showing food {index+1}//{pages}", icon_url=ctx.author.avatar)
             await interaction.response.edit_message(embed = em, view = view)
 
         async def on_timeout():
-            for children in view.children:
-                children.disabled = True
             await msg.edit(view=None)
-
         button_prev.callback = button_callback
         button_next.callback = button_callback
         eat_button.callback = button_callback
@@ -389,10 +408,8 @@ class Activity(commands.Cog):
     
     @commands.command(aliases=["loc"] )     
     async def location(self, ctx):
-        with open("data.json", 'r') as f:
-            profile = json.load(f)
-        loc = profile[str(ctx.author.id)]["world"]
-        loc_sub = profile[str(ctx.author.id)]["location"]
+        loc = data[str(ctx.author.id)]["world"]
+        loc_sub = data[str(ctx.author.id)]["location"]
         em = Embed(title=f"{ctx.author.name}'s Location", description=f"World : {loc.capitalize()}\nLocation : {loc_sub.capitalize()}\nUse the ```m!go``` command to travel diffrent places", colour = discord.Colour.blue())
         await ctx.reply(embed=em)
     
@@ -461,13 +478,11 @@ class Activity(commands.Cog):
     
     @commands.command()
     async def health(self, ctx):
-        with open("data.json", 'r') as f:
-            profile = json.load(f)
-        health = profile[str(ctx.author.id)]["health"]
-        max_health = profile[str(ctx.author.id)]["max_health"]
+        health = data[str(ctx.author.id)]["health"]
+        max_health = data[str(ctx.author.id)]["max_health"]
         heart = hearts(ctx)
         foods = food(ctx)
-        food_bar = profile[str(ctx.author.id)]["food"]
+        food_bar = data[str(ctx.author.id)]["food"]
         await ctx.reply(embed = Embed(title=f"{ctx.author.name}'s health", description= f"{health} {heart} {max_health}\n{food_bar} {foods} 100", colour= discord.Colour.red()).set_footer(text=f"requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
     
     @commands.command()
