@@ -95,9 +95,9 @@ async def xp_manager(ctx, xp_add):
     data[str(ctx.author.id)]["level"] = level
         
 
-def builds_manager(ctx, build, remove=False):
+def builds_manager(ctx, build, replace=False):
     """Adds or removes builds from profile"""
-    if remove is False:
+    if replace is False:
         data[str(ctx.author.id)]["builds"].append(build)
     else:
         data[str(ctx.author.id)]["builds"].pop(build)
@@ -109,9 +109,9 @@ def build_searcher(ctx, build):
     else:
         return False
     
-def add_place(ctx, place, remove= False):
+def add_place(ctx, place, replace= False):
     """Adds place in the places list of the user id"""
-    if remove is False:
+    if replace is False:
         data[str(ctx.author.id)]["places"].append(place)
     else:
         data[str(ctx.author.id)]["inv"].pop(place)
@@ -190,12 +190,20 @@ def user_location(ctx, world = False ):
         
 async def location_changer(ctx, world=False, location=False):
     """Changes user's location"""
-    data[str(ctx.author.id)]["location"] = f"ON THE WAY TO {location.remove("_"," ").capitalze()}"
-    em = discord.Embed(title=f"{ctx.author.name} is Travelling", description=f"From {data[str(ctx.author.id)["location"]]} to {location.remove("_"," ").capitalze()}",color = discord.Color.green())
+    loc = data[str(ctx.author.id)]["location"].replace("_"," ").capitalize()
+    dest = location.replace("_"," ").capitalize()
+    data[str(ctx.author.id)]["location"] = location
+    filled = info["id"]["progress_filled"]
+    empty = info["id"]["progress_empty"]
+    bar = filled + (empty * 9)
+    em = discord.Embed(title=f"{ctx.author.name} is Travelling", description=f"{loc} {bar} {dest}",color = discord.Color.green())
     em.set_footer(text=f"Updated at  {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
-    msg = await ctx.reply(embed=em)
-    msg_dm = await ctx.author.send(embed=em)
-    message[msg] = [msg, msg_dm, "loc_change", em]
+    msg = await ctx.send(content=f"<@{ctx.author.id}>",embed=em)
+    try:
+        msg_dm = await ctx.author.send(embed=em)
+    except discord.Forbidden:
+        msg_dm = None
+    message[msg] = [msg, msg_dm, em, 1, ctx]
 
 async def change_health(ctx, value):
     """Changes user's health (only reduces it)"""

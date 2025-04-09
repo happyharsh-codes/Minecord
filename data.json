@@ -12,19 +12,21 @@
         "world": "over",
         "inv_size": 25,
         "level": 0,
-        "xp": 1,
+        "xp": 19,
         "health": 100,
         "food": 100,
         "max_health": 100,
         "builds": [],
         "places": [
-            "ocean"
+            "ocean",
+            "cave",
+            "village"
         ],
         "adv": [],
         "log": {
-            "hunt": 4,
+            "hunt": 5,
             "chop": 3,
-            "adv": 1
+            "adv": 3
         }
     }
 }

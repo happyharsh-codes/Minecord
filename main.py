@@ -26,25 +26,19 @@ async def on_ready():
 async def loop():
     print("Updating messages")
     for msg in message:
-        if message[msg][2] == "loc_change":
-            pass
-        elif message[msg][2] == "health_change":
-            pass
-        em = message[msg][3]
+        em = message[msg][2]
+        words = em.description.split()
+        message[msg][3] +=1
+        words[1] = f"{info["id"]["progress_filled"]*message[msg][3]}{info["id"]["progress_empty"]*(10-message[msg][3])}"
+        em.description = " ".join(words)
         em.footer.text=f"Updated at {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}"
+        #Updating messages
         await msg.edit(embed=em)
+        food_level(message[msg][4], -random.randint(1,10))
         if message[msg][1] != None:
             await message[msg][1].edit(embed=em)
-
-@tasks.loop(minutes=1)
-async def dumping_loop():
-    print("dumping files")
-    with open("data.json", "w") as f:
-        json.dump(data,f,indent=4)
-    with open("messages.json", "w") as f:
-        json.dump(message,f,indent=4)
-    with open("server.json", "w") as f:
-        json.dump(server,f,indent=4)
+        if message[msg][3] == 10:
+            del message[msg]
     for id in data:
         if data[id]["health"] != data[id]["max_health"] and data[id]["food"] >= 90:
             data[id]["health"] += random.randint(1,10)
@@ -57,6 +51,16 @@ async def dumping_loop():
                 await kill(id)
         if data[id]["food"] <= 0:
             await kill(id, client.get_user(int(id)), "You starved to death")
+
+@tasks.loop(minutes=1)
+async def dumping_loop():
+    print("dumping files")
+    with open("data.json", "w") as f:
+        json.dump(data,f,indent=4)
+    with open("messages.json", "w") as f:
+        json.dump(message,f,indent=4)
+    with open("server.json", "w") as f:
+        json.dump(server,f,indent=4)
 
 #-----Events-----#
 client.event(event.on_message)

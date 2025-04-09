@@ -327,10 +327,10 @@ class Activity(commands.Cog):
                     return
                 label = interaction.data["custom_id"]
                 if label == "go_button":
-                    await location_changer(ctx, location=places[index], world=world)
                     for item in view.children:
                         item.disabled = True
-                    await interaction.response.edit_message(content="You went on the journey",view=view)
+                    await interaction.response.edit_message(content=f"You went on the journey to {places[index].replace("_"," ").capitalize()}",view=None,embed=None)
+                    await location_changer(ctx, location=places[index], world=world)
                     return
                 if label == "button_prev":
                     index -= 1
@@ -362,7 +362,7 @@ class Activity(commands.Cog):
         else:
             place = get_id(place)
             if place in places:
-                location_changer(ctx, location=place)
+                await location_changer(ctx, location=place)
                 #time mechanism
                 embed = Embed(title="Going",colour=Color.green())
                 embed.set_footer(text= f"Updated at {datetime.datetime.utcnow()}", icon_url=ctx.author.avatar)
