@@ -43,6 +43,18 @@ async def dumping_loop():
         json.dump(message,f,indent=4)
     with open("server.json", "w") as f:
         json.dump(server,f,indent=4)
+    for id in data:
+        if data[id]["health"] != data[id]["max_health"] and data[id]["food"] >= 90:
+            data[id]["health"] += random.randint(1,10)
+            if data[id]["health"] >= data[id]["max_health"]:
+                data[id]["health"] = data[id]["max_health"]
+        if 0 < data[id]["food"] < 30:
+            data[id]["food"] -= random.randint(1,7)
+            data[id]["health"] -= random.randint(1,10)
+            if data[id]["health"] <= 0:
+                await kill(id)
+        if data[id]["food"] <= 0:
+            await kill(id, client.get_user(int(id)), "You starved to death")
 
 #-----Events-----#
 client.event(event.on_message)

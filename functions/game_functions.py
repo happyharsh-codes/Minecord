@@ -198,68 +198,49 @@ async def location_changer(ctx, world=False, location=False):
     message[msg] = [msg, msg_dm, "loc_change", em]
 
 async def change_health(ctx, value):
-    """Changes user's health"""
-    armour = data[str(ctx.author.id)]["armour"]
+    """Changes user's health (only reduces it)"""
+    armours= data[str(ctx.author.id)]["armour"]
     health = data[str(ctx.author.id)]["health"]
     max_health = data[str(ctx.author.id)]["max_health"]
-    if max_health == 100:
+    if armour == {}:
         health += value
-        if health > 100:
-            health = 100
     else:
-        if value > 0:
-            health += value
-            if health > max_health:
-                health = max_health
-        else:
-          for i in range(1, (-value)+1):
-            health -= 1
+        for i in range((-value)):
             if health > 100:
-              for armours in armour:
-                armour[armours] -= random.randint(1,3)
-                if armour[armours] == 0:
-                  await break_armour(ctx, armours)
-    try:
-        if health ==  0:
-            await kill(ctx)
-            await ctx.suthor.send("Oho you died.")
-        elif health <= 30:
-            await ctx.author.send("Oho you are on low health, try eating something.")
-    except:
-        pass
+                for armour in armour:
+                    armours[armour] -= random.randint(1,3)
+                if random.randint(1,2) == 1:
+                    health-=1
+            else:
+                health -= 1
+        for armour in armours:
+            if armours[armour] <= 0:
+                armours.pop(armour)
+                await ctx.send(f"<@{ctx.author.id} your {armour.replace("_"," ").capitalize()} broke down")
+                try:
+                    await ctx.author.send(f"<@{ctx.author.id}> your {armour.replace("_", " ").capitalize()} broke down")
+                except:
+                    pass
+                max_health -= info["armour"][armour]
+    if health <=  0:
+        await kill(str(ctx.author.id))
+        await ctx.send(f"Oho <@{ctx.author.id}> died.")
+    elif health <= 30:
+        await ctx.author.send("Oho you are on low health, try eating something.")
+        
     data[str(ctx.author.id)]["armour"] = armour
     data[str(ctx.author.id)]["health"] = health
     data[str(ctx.author.id)]["max_health"] = max_health 
-
-async def armour(ctx, armour, value):
-    """Mofidfies armour durability"""
-    armours = data[str(ctx.author.id)]["armour"]
-    if armours[armour] <= -value:
-    # Breaking the armour if full durability has to be reduced
-        await break_armour(ctx, armour)
-    else:
-        armours[armour] += value
-    data[str(ctx.author.id)]["armour"] = armours
 
 def equipt_armour(ctx, armour):
     """Equipts the armour and increases the max health"""
     armours = data[str(ctx.author.id)]["armour"]
     armour_dur = info["armour"][armour]
     health_increase = info["armour_health"][armour]
-    if armour in armours:
-        armours[armour] += armour_dur
-    else:
-        armours.update({armour: armour_dur})
+    armours.update({armour: armour_dur})
     data[str(ctx.author.id)]["max_health"] += health_increase
     data[str(ctx.author.id)]["armour"] = armours
 
-async def break_armour(ctx, name):
-    """Breaks the armour and decreases the max health"""
-    armours = data[str(ctx.author.id)]["armour"]
-    max_health = data[str(ctx.author.id)]["max_health"]
-    max_health -= info["armour_health"][name]
-    armours.pop(name)
-    data[str(ctx.author.id)]["armour"] = armours
-    data[str(ctx.author.id)]["max_health"] = max_health
-    await ctx.send(f"<@{ctx.author.id}> your {name.remove("_", " ").capitalize()} broke down")
-    await ctx.author.send(f"<@{ctx.author.id}> your {name.remove("_", " ").capitalize()} broke down")
+async def kill(id, user, reason):
+    del data[id]
+    await user.send(embed=discord.Embed(title="YOU DIED!",description=reason + "\n You can start a new game using m!start command",color=discord.Color.red()).set_footer(text=f"{user.name} died at  {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}", icon_url=user.avatar))

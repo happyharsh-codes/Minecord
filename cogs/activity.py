@@ -207,7 +207,7 @@ class Activity(commands.Cog):
                 index +=1
             button_prev.disabled = index == 0
             button_next.disabled = index == pages-1
-            em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["emoji"][food[index]].split(":")[2]}.png")
+            em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][food[index]].split(":")[2]}.png")
             em.description=f"***{foods[index].replace("_"," ").capitalize()} X {inv[foods[index]]}***"
             em.footer.text = f"Showing food {index+1}//{pages}"
             await interaction.response.edit_message(embed = em, view = view)
@@ -292,7 +292,7 @@ class Activity(commands.Cog):
             index = 0
             images = info["images"]
             def create_embed(index):
-                embed = discord.Embed(title="Going",description=f"***{places[index].remove("_"," ").capitalize()}***",color=discord.Color.green())
+                embed = discord.Embed(title="Going",description=f"***{places[index].replace("_"," ").capitalize()}***",color=discord.Color.green())
                 embed.set_image(url=images[places[index]])
                 embed.set_footer(
                     text=f"Showing {places[index]} {index+1}//{pages}",
@@ -881,7 +881,7 @@ class Activity(commands.Cog):
         for block in blocks:
             quantity = random.randint(1,110) 
             add_item(ctx, ctx.author.id, block, quantity)
-            block_name = block.remove("_"," ").cpitalize()
+            block_name = block.replace("_"," ").cpitalize()
             descrip += f"\n{data[block]} {block_name} X {quantity}"
         await ctx.reply(embed= Embed(title=f"{ctx.author.name} went on a {cave}",description=descrip,color=Color.green()))
 
