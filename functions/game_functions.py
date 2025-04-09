@@ -50,9 +50,15 @@ def place_searcher(ctx, place):
     else:
         return False
     
-def adv_manager(ctx, adv):
+async def adv_manager(ctx, adv):
     """Adds advancements in the user profile"""
     data[str(ctx.author.id)]["adv"].append(adv)
+    await ctx.send(f"<@{ctx.author.id}> You made an advancement!!")
+    try:
+        await ctx.send(f"<@{ctx.author.id}> You made an advancement!!")
+    except:
+        pass
+
         
 def adv_searcher(ctx, adv):
         """Searches for advancement in profile, if found returns true"""
@@ -71,7 +77,10 @@ async def spawn(ctx):
     mob = random.choice(list(info["mob"].keys()))
     if str(ctx.guild.id) not in server:
         await ctx.send("A mob has spawned.\nUse command ```m!kill <mob_name>``` to kill the mob")
-        server[str(ctx.guild.id)] = (mob, 500)
+        if str(ctx.guild.id) in server:
+            server[str(ctx.guild.id)].update({mob, random.randint(100,500)})
+        else:
+            server[str(ctx.guild.id)] = {mob, random.randint(100,500)}
 
 async def despawn(ctx):
     if str(ctx.guild.id) in server:
@@ -89,7 +98,10 @@ async def xp_manager(ctx, xp_add):
     if xp >= (level+1)*100:        
         xp -= (level+1) * 100
         level += 1
-        await ctx.author.send(f"{ctx.author.mention} you reached level {level}")
+        try:
+            await ctx.author.send(f"{ctx.author.mention} you reached level {level}")
+        except:
+            pass
         await ctx.send(f"{ctx.author.mention} you reached level {level}")
     data[str(ctx.author.id)]["xp"] = xp
     data[str(ctx.author.id)]["level"] = level
@@ -149,7 +161,7 @@ def food(ctx):
     foods = data[str(ctx.author.id)]["food"]
     if foods == 0:
         return "0"
-    food = "<:food:914830073067102218>"
+    foode = "<:food:914830073067102218>"
     half_food = "<:half_food:914829417501589546>"
     user_food = ""
     if foods == 100:
@@ -158,9 +170,9 @@ def food(ctx):
     for i in range(1,foods+1):
         if (i % 10) == 0:
             # Replacing Half heart by full heart.
-            user_food = user_food.replace(half_food, food)
+            user_food = user_food.replace(half_food, foode)
         elif (i % 5) == 0:
-          user_food += half_food
+            user_food += half_food
     return user_food
 
 def inv_searcher(ctx, *items):
@@ -198,7 +210,10 @@ async def location_changer(ctx, world=False, location=False):
     bar = filled + (empty * 9)
     em = discord.Embed(title=f"{ctx.author.name} is Travelling", description=f"{loc} {bar} {dest}",color = discord.Color.green())
     em.set_footer(text=f"Updated at  {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
-    msg = await ctx.send(content=f"<@{ctx.author.id}>",embed=em)
+    try:
+        msg = await ctx.send(content=f"<@{ctx.author.id}>",embed=em)
+    except Exception as e:
+        print(e)
     try:
         msg_dm = await ctx.author.send(embed=em)
     except discord.Forbidden:

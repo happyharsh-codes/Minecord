@@ -250,7 +250,9 @@
         "netherite_boots": "<:netherite_boots:909720110346932314>",
         "stick": "<:stick:917330163304366080>",
         "quartz_stait": "<:quartz_stair:899950417386029087>",
-        "netherite_scarp": "<:netherite_scarp:917372181523070987>"
+        "netherite_scarp": "<:netherite_scarp:917372181523070987>",
+        "progress_filled": "<:progress_filled:1359176824978018535>",
+        "progress_empty": "<:progress_empty:1359176792598122759>"
     },
     "mob": {
         "cow": [

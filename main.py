@@ -6,6 +6,7 @@ from functions.game_functions import*
 from config import *
 from keep_alive import keep_alive
 from dotenv import load_dotenv
+from datetime import datetime, UTC
 load_dotenv()
     
 intents = discord.Intents(messages = True, guilds = True, dm_messages = True, members = True, presences = True, dm_reactions = True, reactions = True, emojis = True, emojis_and_stickers = True, message_content = True) 
@@ -24,33 +25,34 @@ async def on_ready():
 #-----Loop-----#
 @tasks.loop(seconds=20)
 async def loop():
-    print("Updating messages")
-    for msg in message:
+    for msg in list(message):
+        print("Updating messages")
         em = message[msg][2]
         words = em.description.split()
         message[msg][3] +=1
         words[1] = f"{info["id"]["progress_filled"]*message[msg][3]}{info["id"]["progress_empty"]*(10-message[msg][3])}"
         em.description = " ".join(words)
-        em.footer.text=f"Updated at {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}"
+        em.set_footer(text=f"Updated at {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=message[msg][4].author.avatar)
         #Updating messages
-        await msg.edit(embed=em)
+        await msg.channel.send(embed=em)
         food_level(message[msg][4], -random.randint(1,10))
         if message[msg][1] != None:
             await message[msg][1].edit(embed=em)
         if message[msg][3] == 10:
             del message[msg]
+    #changing health
     for id in data:
         if data[id]["health"] != data[id]["max_health"] and data[id]["food"] >= 90:
             data[id]["health"] += random.randint(1,10)
             if data[id]["health"] >= data[id]["max_health"]:
                 data[id]["health"] = data[id]["max_health"]
-        if 0 < data[id]["food"] < 30:
+        elif 0 < data[id]["food"] < 30:
             data[id]["food"] -= random.randint(1,7)
             data[id]["health"] -= random.randint(1,10)
             if data[id]["health"] <= 0:
                 await kill(id)
-        if data[id]["food"] <= 0:
-            await kill(id, client.get_user(int(id)), "You starved to death")
+        elif data[id]["food"] <= 0:
+            await kill(id, message[msg][4].author, "You starved to death")
 
 @tasks.loop(minutes=1)
 async def dumping_loop():

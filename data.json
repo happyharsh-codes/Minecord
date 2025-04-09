@@ -3,18 +3,19 @@
         "name": "happyharsh.",
         "diff": "hard",
         "inv": {
-            "log": 4,
-            "raw_porkchop": 1
+            "log": 7
         },
-        "tools": {},
+        "tools": {
+            "stone_pickaxe": 100
+        },
         "armour": {},
-        "location": "home",
+        "location": "cave",
         "world": "over",
         "inv_size": 25,
         "level": 0,
         "xp": 19,
         "health": 100,
-        "food": 100,
+        "food": 78,
         "max_health": 100,
         "builds": [],
         "places": [
@@ -24,9 +25,10 @@
         ],
         "adv": [],
         "log": {
-            "hunt": 5,
-            "chop": 3,
-            "adv": 3
+            "hunt": 6,
+            "chop": 4,
+            "adv": 4,
+            "travel": 5
         }
     }
 }

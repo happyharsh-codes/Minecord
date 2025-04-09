@@ -14,6 +14,8 @@ class Events:
             return
         if isinstance(message.channel, discord.DMChannel):
             if message.author.id == 894072003533877279:
+                if (message.content[:17]).isdigit():
+                    return
                 em = discord.Embed(title = "Do you want to send this message ?", description = message.content , colour = discord.Colour.red()) 
                 msg =  await message.channel.send(embed = em )           
                 await msg.add_reaction("✅")
@@ -91,24 +93,22 @@ class Events:
     
     async def on_disconnect(self):
         with open("data.json", "w") as f:
-            json.dump(data,f)
+            json.dump(data,f,indent=4)
         with open("messages.json", "w") as f:
-            json.dump(message,f)
+            json.dump(message,f,indent=4)
         with open("server.json", "w") as f:
-            json.dump(server,f)
+            json.dump(server,f,indent=4)
 
     async def on_command_completion(self, ctx):
         chance = random.randint(1,3)
         tip = random.randint(1,10)
         if chance == 2:       
-                await xp_manager(ctx, random.randint(1,10))
+            await xp_manager(ctx, random.randint(1,10))
         if tip == 10:
-                tip = info["tips"]
-                await ctx.send(f"**Quick Tip** : {random.choice(tip)}")
-        if (random.randint(1,50)) == 1:
+            tip = info["tips"]
+            await ctx.send(f"**Quick Tip** : {random.choice(tip)}")
+        if (random.randint(1,15)) == 1:
             await spawn(ctx)
-            await asyncio.sleep(200)
-            await despawn(ctx)
 
     async def on_command_error(self, ctx, error):
         '''Handelling errors'''
