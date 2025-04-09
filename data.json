@@ -9,13 +9,13 @@
             "stone_pickaxe": 100
         },
         "armour": {},
-        "location": "cave",
+        "location": "On the way to cave",
         "world": "over",
         "inv_size": 25,
         "level": 0,
         "xp": 19,
         "health": 100,
-        "food": 78,
+        "food": 65,
         "max_health": 100,
         "builds": [],
         "places": [
@@ -28,7 +28,7 @@
             "hunt": 6,
             "chop": 4,
             "adv": 4,
-            "travel": 5
+            "travel": 7
         }
     }
 }

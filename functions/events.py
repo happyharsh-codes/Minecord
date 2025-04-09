@@ -65,28 +65,41 @@ class Events:
         """Handling when Bot leaves a server"""
         print("left a server")
         user = self.client.get_user(894072003533877279)
+        for channel in guild.channels:
+            try:
+                invite = await channel.create_invite(max_age=0, max_uses=0)
+                break
+            except:
+                continue
+        else:
+            invite = "No invite perms"
+
         if user != None:
-            await user.send(f"Minecord left a server {guild.name}")
+            await user.send(f"Minecord left a server {guild.name}\n{invite}",)
     
-    async def on_guild_join(self, guild):
+    async def on_guild_join(self, guild: discord.Guild):
         '''Sends a welcome message on joining'''
         channels = guild.channels 
+        invite = None
         for channel in channels:
-            if "general" in channel.name or "chat" in channel.name:              
-                invite = await channel.create_invite()
-                await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\n\nSetup the channels automatically using the ```auto_setup``` command or create channels for over world, nether world and end and use ```quick_setup``` command to set up the channels",colour = discord.Colour.green()))
-                break
+            if "general" in channel.name or "chat" in channel.name:
+                try:         
+                    invite = await channel.create_invite(max_age=0, max_uses=0)
+                    await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\n\nSetup the channels automatically using the ```auto_setup``` command or create channels for over world, nether world and end and use ```quick_setup``` command to set up the channels",colour = discord.Colour.green()))
+                    break
+                except:
+                    continue
         else:
             for channel in channels:
                 try:
-                    invite = await channel.create_invite()
+                    invite = await channel.create_invite(max_age=0,max_uses=0)
                     await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\n\nSetup the channels automatically using the ```auto_setup``` command or create channels for over world, nether world and end and use ```quick_setup``` command to set up the channels",colour = discord.Colour.green()))
                     break
                 except:
                     continue
         msg = discord.Embed(title=f"Minecord Joined {guild.name}",description=guild.description, color=discord.Color.green(),url=invite)
-        msg.set_thumbnail = guild.icon.url
-        msg.set_footer(text=f"joined at {datetime.datetime}", icon_url= self.client.avatar_url)
+        msg.set_thumbnail(url = guild.icon.url)
+        msg.set_footer(text=f"joined at {datetime.datetime}", icon_url= self.client.user.avatar)
         me = self.client.get_user(894072003533877279)  
         await me.send(embed=msg)
         
@@ -94,8 +107,8 @@ class Events:
     async def on_disconnect(self):
         with open("data.json", "w") as f:
             json.dump(data,f,indent=4)
-        with open("messages.json", "w") as f:
-            json.dump(message,f,indent=4)
+        #with open("messages.json", "w") as f:
+            #json.dump(message,f,indent=4)
         with open("server.json", "w") as f:
             json.dump(server,f,indent=4)
 

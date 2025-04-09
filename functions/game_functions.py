@@ -204,7 +204,7 @@ async def location_changer(ctx, world=False, location=False):
     """Changes user's location"""
     loc = data[str(ctx.author.id)]["location"].replace("_"," ").capitalize()
     dest = location.replace("_"," ").capitalize()
-    data[str(ctx.author.id)]["location"] = location
+    data[str(ctx.author.id)]["location"] = f"On the way to {location}"
     filled = info["id"]["progress_filled"]
     empty = info["id"]["progress_empty"]
     bar = filled + (empty * 9)

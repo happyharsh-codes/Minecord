@@ -103,12 +103,12 @@ class Activity(commands.Cog):
         pages = len(pickaxe)
         index = 0
         em = Embed(title="Mining",color=Color.green())
-        em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["emoji"][pickaxe[0]].split(":")[2]}.png")
+        em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][pickaxe[0]].split(":")[2]}.png")
         em.set_footer(text=f"Showing pickaxe {index+1}//{pages}", icon_url=ctx.author.avatar)
         
         button_prev = Button(style=ButtonStyle.blurple,label="«",disabled=True, custom_id="button_prev")
         button_next=Button(style=ButtonStyle.blurple,label="»",disabled=pages<=1,custom_id="button_next")
-        mine_button = Button(style=ButtonStyle.red, label=f"Use {tools[index].replace("_"," ").capitalize()}",custom_id="mine_button")
+        mine_button = Button(style=ButtonStyle.red, label=f"Use {pickaxe[index].replace("_"," ").capitalize()}",custom_id="mine_button")
       
         view = View(timeout=30)
         view.add_item(button_prev)
@@ -139,7 +139,7 @@ class Activity(commands.Cog):
                 index +=1
             button_prev.disabled = index == 0
             button_next.disabled = index == pages-1
-            em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["emoji"][pickaxe[index]].split(":")[2]}.png")
+            em.set_image(url = f"https://cdn.discordapp.com/emojis/{info["id"][pickaxe[index]].split(":")[2]}.png")
             em.footer.text =f"Showing pickaxe {index+1}//{pages}"
             await interaction.response.edit_message(embed = em, view = view)
 
@@ -394,7 +394,7 @@ class Activity(commands.Cog):
         loc = profile[str(ctx.author.id)]["world"]
         loc_sub = profile[str(ctx.author.id)]["location"]
         em = Embed(title=f"{ctx.author.name}'s Location", description=f"World : {loc.capitalize()}\nLocation : {loc_sub.capitalize()}\nUse the ```m!go``` command to travel diffrent places", colour = discord.Colour.blue())
-        await ctx.send(embed=em)
+        await ctx.reply(embed=em)
     
     @commands.command()
     async def throw(self, ctx, item, value):
@@ -444,7 +444,7 @@ class Activity(commands.Cog):
         
     @commands.command()
     async def invite(self, ctx):
-        invite_button = Button(style=ButtonStyle.link, label="Invite", url = discord.utils.oauth_url(self.client.user.id, permissions= discord.Permissions(414467873393)))
+        invite_button = Button(style=ButtonStyle.link, label="Invite", url = discord.utils.oauth_url(self.client.user.id, permissions= discord.Permissions(1126864130526785)))
         vote_button = Button(style=ButtonStyle.link,label = "Vote",url = "https://top.gg/bot/896308161831657492")
         embed = Embed(title="Invite Minecord", description="Glad to hear that you are inviting us to your server.",colour=discord.Colour.light_grey())
         embed.set_footer(text=f"requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
@@ -594,7 +594,7 @@ class Activity(commands.Cog):
         button8.callback = on_interaction
         view.on_timeout = on_timeout
    
-    @commands.command(alias="xp" )
+    @commands.command(aliases= ["xp","lvl"])
     async def level(self, ctx):
         with open("data.json", 'r')as f:
           profile = json.load(f)[str(ctx.author.id)]
@@ -755,7 +755,7 @@ class Activity(commands.Cog):
       
     @commands.command()
     async def build(self, ctx, monument=None):
-        if monument is None:
+        try:
             index = 0
             indexx = 0
             items = list(info["build"].keys())
@@ -775,23 +775,24 @@ class Activity(commands.Cog):
             msg = await ctx.reply(embed=em,view=view)
 
             def set_descrip():
-                global build2, item, index, indexx, info, ctx
+                nonlocal build2, items, index, indexx, ctx
                 descrip = f"***Building {items[indexx].replace("_", " ").capitalize()}***\n"
+                build_info = info["build"][items[indexx]]
                 if "farm" in items[indexx]:
-                    if build_searcher(ctx, info["build"][items[indexx]][0]):
+                    if build_searcher(ctx, build_info[0]):
                         descrip += f":white_check_mark: {info["build"][items[indexx]][0]}\n"
                     else:
-                        descrip += f":x: {info["build"][items[indexx]][0]}\n"
+                        descrip += f":x: {build_info[0]}\n"
                         build2.disabled = True
                         build2.style = ButtonStyle.red
-                    if inv_searcher(ctx, info["build"][items[indexx]][1]):
-                        descrip += f":white_check_mark: {info["build"][items[indexx]][0]}"
+                    if inv_searcher(ctx, build_info[1]):
+                        descrip += f":white_check_mark: {build_info[0]}"
                     else:
-                        descrip += f":x: {info["build"][items[indexx]][0]}"
+                        descrip += f":x: {build_info[0]}"
                         build2.disabled = True
                         build2.style = ButtonStyle.red
                 else:
-                    for item, val in info["build"][(index)*5+indexx]:
+                    for item, val in build_info:
                         if item in data[str(ctx.author.id)]["inv"] and data[str(ctx.author.id)]["inv"][item] >= val:
                             descrip += f":white_check_mark: {item} X {val}\n"
                         else:
@@ -801,7 +802,7 @@ class Activity(commands.Cog):
                 return descrip
 
             async def on_interaction(interaction: discord.Interaction):
-                nonlocal index,items, indexx
+                nonlocal index, items, indexx
                 button = interaction.data["custom_id"]
                 em.clear_fields()
                 if button == "build":
@@ -873,6 +874,8 @@ class Activity(commands.Cog):
             button_prev2.callback = on_interaction2
             button_next2.callback = on_interaction2
             view.on_timeout = on_timeout
+        except Exception as e:
+            print(e)
 
     @commands.command()
     @commands.cooldown(1, 5000, type=commands.BucketType.user)

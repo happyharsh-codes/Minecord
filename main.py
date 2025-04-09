@@ -39,6 +39,7 @@ async def loop():
         if message[msg][1] != None:
             await message[msg][1].edit(embed=em)
         if message[msg][3] == 10:
+            data[str(message[msg][4].author.id)]["location"] = data[str(message[msg][4].author.id)]["location"].split()[-1]
             del message[msg]
     #changing health
     for id in data:
@@ -59,8 +60,8 @@ async def dumping_loop():
     print("dumping files")
     with open("data.json", "w") as f:
         json.dump(data,f,indent=4)
-    with open("messages.json", "w") as f:
-        json.dump(message,f,indent=4)
+    #with open("messages.json", "w") as f:
+        #json.dump(message,f,indent=4)
     with open("server.json", "w") as f:
         json.dump(server,f,indent=4)
 
