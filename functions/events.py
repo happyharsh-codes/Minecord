@@ -1,6 +1,7 @@
 import discord 
 from discord.ext import commands
-import asyncio, datetime, random
+import asyncio, random
+from datetime import datetime, UTC
 from config import*
 from functions.game_functions import*
 
@@ -61,7 +62,7 @@ class Events:
         print(f"processing cmd {cmd}")
         await self.client.process_commands(message)        
       
-    async def on_guild_leave(self, guild):
+    async def on_guild_leave(self, guild: discord.Guild):
         """Handling when Bot leaves a server"""
         print("left a server")
         user = self.client.get_user(894072003533877279)
@@ -99,7 +100,7 @@ class Events:
                     continue
         msg = discord.Embed(title=f"Minecord Joined {guild.name}",description=guild.description, color=discord.Color.green(),url=invite)
         msg.set_thumbnail(url = guild.icon.url)
-        msg.set_footer(text=f"joined at {datetime.datetime}", icon_url= self.client.user.avatar)
+        msg.set_footer(text=f"joined at {datetime.now(UTC)}", icon_url= self.client.user.avatar)
         me = self.client.get_user(894072003533877279)  
         await me.send(embed=msg)
         

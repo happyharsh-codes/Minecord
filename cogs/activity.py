@@ -735,8 +735,9 @@ class Activity(commands.Cog):
                 tool_manager(ctx, tool, -random.randint(1,2)*quantity)
                 break
         await add_item(ctx,ctx.author.id, hunt, quantity)
-        hunt = hunt.replace("_"," ")
-        await ctx.reply(f"You killed a {mob} and got {quantity} {hunt}")
+        emoji = info["id"][hunt]
+        hunt = hunt.replace("_"," ").capitalize()
+        await ctx.reply(f"You killed a {mob} and got {quantity} {hunt} {emoji}")
             
     
     @commands.command()
