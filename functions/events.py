@@ -100,7 +100,7 @@ class Events:
                     continue
         msg = discord.Embed(title=f"Minecord Joined {guild.name}",description=guild.description, color=discord.Color.green(),url=invite)
         msg.set_thumbnail(url = guild.icon.url)
-        msg.set_footer(text=f"joined at {datetime.now(UTC)}", icon_url= self.client.user.avatar)
+        msg.set_footer(text=f"joined at {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url= self.client.user.avatar)
         me = self.client.get_user(894072003533877279)  
         await me.send(embed=msg)
         
@@ -133,7 +133,7 @@ class Events:
         elif isinstance(error, discord.Forbidden):
             pass
         elif isinstance(error,commands.CommandOnCooldown):
-          await ctx.reply(embed=discord.Embed(title="Command On Cooldown",description=f"Take a rest, try again after ```{int(error.retry_after)}``` seconds",color= discord.Color.red()).set_footer(text=f"requested by {ctx.author.name} at  {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+          await ctx.reply(embed=discord.Embed(title="Command On Cooldown",description=f"Take a rest, try again after ```{int(error.retry_after)}``` seconds",color= discord.Color.red()).set_footer(text=f"requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
         )
         else:
             print("Unknown error happened")
@@ -142,9 +142,6 @@ class Events:
                 await user.send(f"Crash report {error}")
                 raise error
             
-    async def on_error(self, ctx, error):
-        await ctx.send("Unfortunate error occured :/\nWe are very sorry")
-        raise error
-        
-    async def on_command_completion(self, ctx):
-        pass
+    async def on_error(self, event_method):
+        print(f"Error in event: {event_method}")
+        await self.client.get_user(894072003533877279).send(event_method)
