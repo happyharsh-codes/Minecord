@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from datetime import datetime, UTC
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from keep_alive import keep_alive
 
 def run_web():
     server = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)
@@ -116,4 +117,5 @@ async def main():
         await client.start(os.environ.get("TOKEN"))  # Start the bot
 if __name__ == "__main__":
     threading.Thread(target=run_web).start()
+    keep_alive()
     asyncio.run(main())
