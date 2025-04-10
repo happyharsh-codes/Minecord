@@ -86,7 +86,7 @@ class Events:
             if "general" in channel.name or "chat" in channel.name:
                 try:         
                     invite = await channel.create_invite(max_age=0, max_uses=0)
-                    await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\n\nSetup the channels automatically using the ```auto_setup``` command or create channels for over world, nether world and end and use ```quick_setup``` command to set up the channels",colour = discord.Colour.green()))
+                    await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\nCreate a profile using ``m!start`` command and start playing Minecord using ``chop`` ``hunt`` ``adv`` ``go`` ``eat`` ``mine`` and many more commands.",colour = discord.Colour.green()))
                     break
                 except:
                     continue
@@ -94,7 +94,7 @@ class Events:
             for channel in channels:
                 try:
                     invite = await channel.create_invite(max_age=0,max_uses=0)
-                    await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\n\nSetup the channels automatically using the ```auto_setup``` command or create channels for over world, nether world and end and use ```quick_setup``` command to set up the channels",colour = discord.Colour.green()))
+                    await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\nCreate a profile using ``m!start`` command and start playing Minecord using ``chop`` ``hunt`` ``adv`` ``go`` ``eat`` ``mine`` and many more commands.",colour = discord.Colour.green()))
                     break
                 except:
                     continue
