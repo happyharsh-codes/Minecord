@@ -109,5 +109,6 @@ async def main():
     async with client:
         await load_cogs()  # Load cogs before running the bot
         await client.start(os.getenv("TOKEN"))  # Start the bot
-keep_alive()
-asyncio.run(main())
+if __name__ == "__main__":
+    keep_alive()
+    asyncio.run(main())
