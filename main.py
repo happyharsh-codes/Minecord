@@ -4,11 +4,16 @@ import asyncio, os
 from functions.events import Events
 from functions.game_functions import*
 from config import *
-from keep_alive import keep_alive
 from dotenv import load_dotenv
 from datetime import datetime, UTC
-load_dotenv()
+import threading
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+def run_web():
+    server = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)
+    server.serve_forever()
     
+load_dotenv()
 intents = discord.Intents(messages = True, guilds = True, dm_messages = True, members = True, presences = True, dm_reactions = True, reactions = True, emojis = True, emojis_and_stickers = True, message_content = True) 
 client = commands.Bot(command_prefix= 'm!', case_insensitive=True, help_command=None, intents = intents )
 event = Events(client)
@@ -110,5 +115,5 @@ async def main():
         await load_cogs()  # Load cogs before running the bot
         await client.start(os.environ.get("TOKEN"))  # Start the bot
 if __name__ == "__main__":
-    keep_alive()
+    threading.Thread(target=run_web).start()
     asyncio.run(main())
