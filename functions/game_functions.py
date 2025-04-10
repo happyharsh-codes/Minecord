@@ -1,6 +1,8 @@
 import math
 from config import*
-import json, discord, datetime, random
+import discord, random
+from datetime import datetime, UTC
+
 
 def has_profile(id):
     if str(id) in data:
@@ -209,7 +211,7 @@ async def location_changer(ctx, world=False, location=False):
     empty = info["id"]["progress_empty"]
     bar = filled + (empty * 9)
     em = discord.Embed(title=f"{ctx.author.name} is Travelling", description=f"{loc} {bar} {dest}",color = discord.Color.green())
-    em.set_footer(text=f"Updated at  {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+    em.set_footer(text=f"Updated at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
     try:
         msg = await ctx.send(content=f"<@{ctx.author.id}>",embed=em)
     except Exception as e:
@@ -266,7 +268,7 @@ def equipt_armour(ctx, armour):
 
 async def kill(id, user, reason):
     del data[id]
-    await user.send(embed=discord.Embed(title="YOU DIED!",description=reason + "\n You can start a new game using m!start command",color=discord.Color.red()).set_footer(text=f"{user.name} died at  {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}", icon_url=user.avatar))
+    await user.send(embed=discord.Embed(title="YOU DIED!",description=reason + "\n You can start a new game using m!start command",color=discord.Color.red()).set_footer(text=f"{user.name} died at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=user.avatar))
 
 def mining_result(ctx, tool):
     shaft_mine = build_searcher(ctx, 'shaft_mine')

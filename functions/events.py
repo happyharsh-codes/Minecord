@@ -142,6 +142,6 @@ class Events:
                 await user.send(f"Crash report {error}")
                 raise error
             
-    async def on_error(self, event_method):
+    async def on_error(self, event_method, *args, **kwargs):
         print(f"Error in event: {event_method}")
         await self.client.get_user(894072003533877279).send(event_method)
