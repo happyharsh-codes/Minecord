@@ -77,12 +77,11 @@ def log_cmd(ctx, cmd):
 
 async def spawn(ctx):
     mob = random.choice(list(info["mob"].keys()))
-    if str(ctx.guild.id) not in server:
-        await ctx.send(f"A {"wild" if random.randrange(0,1)==1 else "cute"} {mob.replace("_", " ").capitalize()} has spawned.\nUse command ``m!kill {mob}`` to kill the mob")
-        if str(ctx.guild.id) in server:
-            server[str(ctx.guild.id)][mob] = random.randint(100,500)
-        else:
-            server.update({[str(ctx.guild.id)]: {mob: [info["mob_health"][mob], datetime.now(),ctx]}})
+    await ctx.send(f"A {"wild" if random.randrange(0,1)==1 else "cute"} {mob.replace("_", " ").capitalize()} has spawned.\nUse command ``m!kill {mob}`` to kill the mob")
+    if str(ctx.guild.id) in server:
+        server[str(ctx.guild.id)][mob] = [info["mob_health"][mob], datetime.now(),ctx]
+    else:
+        server.update({[str(ctx.guild.id)]: {mob: [info["mob_health"][mob], datetime.now(),ctx]}})
 
 async def despawn():
     for id in server:
