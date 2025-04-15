@@ -16,7 +16,6 @@ class Activity(commands.Cog):
     @commands.command()
     async def start(self, ctx):
         '''creates profiles for new users'''
-        data = json.load(f)
         if str(ctx.author.id) in data:
             await ctx.reply("Your profile is already created. You can play now")
             return
