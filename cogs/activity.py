@@ -16,13 +16,12 @@ class Activity(commands.Cog):
     @commands.command()
     async def start(self, ctx):
         '''creates profiles for new users'''
-        with open("data.json","r") as f:
-            data = json.load(f)
-            if str(ctx.author.id) in data:
-                await ctx.reply("Your profile is already created. You can play now")
-                return
-        em = Embed(title="New Profile", description="You new profile has been created.\nPlease select a difficulty level to begin", colour=Color.green())
-        em.set_footer(text=f"requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+        data = json.load(f)
+        if str(ctx.author.id) in data:
+            await ctx.reply("Your profile is already created. You can play now")
+            return
+        em = Embed(title="New Profile", description="You new profile is being created.\nPlease select a difficulty level to begin", colour=Color.green())
+        em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
         
         select = Select(placeholder="select a difficulty level",max_values=1,options=[SelectOption(label="Easy", value="easy"),SelectOption(label="Normal",value= "normal"),SelectOption(label="Peaceful", value="peaceful"),SelectOption(label="Hard", value="hard"),SelectOption(label="Hardcore", value="hardcore")])
 
@@ -33,6 +32,8 @@ class Activity(commands.Cog):
         async def select_callback(interaction: discord.Interaction):
             create_profile(ctx.author.name, ctx.author.id, interaction.data["values"][0])
             em.color = Color.greyple()
+            em.description = "New Profile created successfully"
+            em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
             await interaction.response.edit_message(embed=em,view=None)
             await ctx.send(f"<@{ctx.author.id}> you can start playing now")
         
@@ -42,12 +43,14 @@ class Activity(commands.Cog):
     async def delete(self,ctx):
         em= Embed(title="Profile Deletion",description="We are so sorry to see you go 😥.\nAre you sure want delete your profile ?\nThis process is highly irreversible.",color=Color.red())
         em.set_thumbnail(url=ctx.author.avatar)
-        em.set_footer(text=f"requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+        em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
         
         msg = await ctx.reply(embed=em)
         await msg.add_reaction("✅")
         await msg.add_reaction("❌")
-        def check(reaction, user):
+        async def check(reaction, user):
+            if str(reaction.emoji) == '❌':
+               await ctx.reply("Good job you stepped back from account deletion")
             return user == ctx.author and str(reaction.emoji) == '✅'
         try:
             react, user = await self.client.wait_for( "reaction_add",check = check, timeout=30)
@@ -87,21 +90,22 @@ class Activity(commands.Cog):
                     break
             if inv[item] > 64:
                 for i in range(math.ceil(inv[item]/64)):
-                    em.add_field(name = f"{target}) {emoji} {name} x {64 if i != math.ceil(inv[item])-1 else inv[item]%64}", value= f"    ID -  *{item}* - {type} - [Click here for item info](https://minecraft_wiki.com/)", inline=False)
+                    em.add_field(name = f"{target}) {emoji} {name} x {64 if i != math.ceil(inv[item])-1 else inv[item]%64}", value= f"    ID -  *{item}* - {type} - [Click here for item info]https://minecraft.fandom.com/wiki/{item})", inline=False)
                     target +=1
             else:      
-                em.add_field(name = f"{target}) {emoji} {name} x {inv[item]}", value= f"    ID - *{item}* - {type} - [Click here for item info](https://minecraft_wiki.com/)", inline=False)
+                em.add_field(name = f"{target}) {emoji} {name} x {inv[item]}", value= f"    ID - *{item}* - {type} - [Click here for item info]https://minecraft.fandom.com/wiki/{item})", inline=False)
                 target += 1
         for tool in tools:
             emoji = info["id"][tool]
             name = tool.replace("_", " ").capitalize()
             type = tool.split("_")[1]
-            em.add_field(name = f"{target}) {emoji} {name}", value= f"    ID -  *{tool}* - {type} - [Click here for item info](https://minecraft_wiki.com/)", inline=False)
+            em.add_field(name = f"{target}) {emoji} {name}", value= f"    ID -  *{tool}* - {type} - [Click here for item info]https://minecraft.fandom.com/wiki/{item})", inline=False)
             target += 1
 
         await ctx.reply(embed=em)
         
     @commands.command()
+    @commands.cooldown(1,200,type= commands.BucketType.user )
     async def mine(self,ctx):
         tools = data[str(ctx.author.id)]["tools"]
         pickaxe = []
@@ -138,7 +142,7 @@ class Activity(commands.Cog):
                 for children in view.children:
                     children.disabled = True
                 await interaction.response.edit_message(embed=em,view=view)
-                em = Embed(title=f"{ctx.author.name} went on Mining", description=f"You went on for mining using {pickaxe[index].replace("_"," ").capitalize()}.\n{info["id"]["progress_filled"]}{info["id"]["progress_empty"]*9}\n Use the _m!return_ command to return home",color=Color.green())
+                em = Embed(title=f"{ctx.author.name} went on Mining", description=f"You went on for mining using {pickaxe[index].replace("_"," ").capitalize()}.\n Use the ``m!return`` command to return home\n{info["id"]["progress_filled"]}{info["id"]["progress_empty"]*9}",color=Color.green())
                 em.set_footer(text=f"Updated at {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
                 msg_send = await ctx.reply(embed=em)
                 try:
@@ -247,14 +251,111 @@ class Activity(commands.Cog):
         view.on_timeout = on_timeout
         
     @commands.command()
-    async def kill(self, ctx):
-        with open("server.json", "r") as f:
-            mobs = json.load(f)[str(ctx.guild.id)]
-        if mobs == []:
-            await ctx.reply("haha there are no mobs to slay wait for your sever to spawn more!!")
-            return
-        
-    
+    async def kill(self, ctx, mob):
+        if isinstance(mob, discord.Member):
+            user = mob
+            if not str(user.id) in data:
+               await ctx.reply("That user isnt playing minecord!!")
+               return
+            if not any(guild in user.mutual_guilds for guild in ctx.author.mutual_guilds):
+               await ctx.reply("That user isnt from your server!!")
+               return
+
+        elif mob.lower() in info["mob"]:
+            mob = mob.lower()
+            if str(ctx.guild.id) not in server:
+                await ctx.reply("Oho there are no available mobs in your server.\nKeep playing and one will spawna automaticly")
+                return
+            if mob not in server[(str(ctx.author.id))]:
+                await ctx.reply("Oho that mob has not spawned in your server. Look for other mobs.\nKeep playing and one will spawna automaticly")
+                return
+            swords = []
+            for tool in data[str(ctx.author.id)]["tools"]:
+                if "sword" in tool:
+                   swords.append(tool)
+            em = Embed(title=f"Attacking {mob.replace("_"," ").capitalze()}",description="")
+            if swords == []:
+               em.description += "You have no sword in your inventory!!"
+            pages = len(swords)
+            i = 0
+            button_prev = Button(style=ButtonStyle.blurple, label="«", disabled=True, custom_id="button_prev")
+            button_next = Button(style=ButtonStyle.blurple,label="»",disabled=pages <= 1,custom_id="button_next")
+            attack = Button(style=ButtonStyle.green,label="Attack Bare Handed" if swords == [] else f"Attack using {swords[i].replace("_"," ").capitalize()}",custom_id="attack")
+            view = View(timeout=30)
+            view.add_item(button_prev)
+            view.add_item(attack)
+            view.add_item(button_next)
+
+            async def on_interaction(interaction: discord.Interaction):
+                label = interaction.data["custom_id"]
+                if label == "attack":
+                    if swords == []:
+                        damage = random.randint(15,25)
+                    elif swords[i] == "wooden_sword":
+                        damage = random.randint(25, 35)
+                    elif swords[i] == "stone_sword":
+                        damage = random.randint(35, 45)
+                    elif swords[i] == "iron_sword":
+                        damage = random.randint(45, 55)
+                    elif swords[i] == "gold_sword":
+                        damage = random.randint(55, 65)
+                    elif swords[i] == "diamond_sword":
+                        damage = random.randint(65, 75)
+                    elif swords[i] == "netherite_sword" :
+                        damage = random.randint(80,100)
+                    server[str(ctx.guild.id)][mob] -= damage
+                    if server[str(ctx.guild.id)][mob] <= 0:
+                        #Mob killed by user
+                        server[str(ctx.guild.id)].pop(mob)
+                        if server[str(ctx.guild.id)] == {}:
+                            server.pop(str(ctx.guild.id))
+                        button_prev.disabled = True
+                        button_next.disabled = True
+                        attack.disabled = True
+                        items = {}
+                        for i in info["mob"][mob]:
+                           items[i] = random.randint(1,4)
+                        await interaction.response.edit_message(embed = em, view=view)
+                        await ctx.reply(f"<@{ctx.author.id}> you killed {mob.replace("_"," ").capitalize()}")
+                        em = Embed(title=f"{ctx.author.name} killed {mob.replace("_"," ").capitalize()}",description="Items Recieved: ", color=Color.red())
+                        em.set_thumbnail(url=ctx.author.avatar)
+                        for item in items:
+                           emoji = info["id"][item]
+                           name = item.remove("_"," ").capitalize()
+                           em.description += f"\n{emoji} {name} x {items[item]}"
+                           await add_item(ctx, ctx.author.id, item, items[item])
+                        if swords != []:    
+                            await tool_manager(ctx, swords[i], damage//2 if random.randint(0,1) == 1 else damage//3)
+                        await ctx.send(embed= em)
+                        return
+                    #Mob attacked by user
+                    heart = hearts(ctx, mob=mob)
+                    await ctx.send(embed=Embed(title=f"{mob.replace("_"," ").capitalize()} was attacked by {ctx.author.name}", color=Color.red()).set_image(url=f"attachment://{mob.png}").set_thumbnail(url=ctx.author.avatar).add_field(name=heart,value=""),files = images[mob])
+                    if swords != []:    
+                            await tool_manager(ctx, swords[i], damage//2 if random.randint(0,1) == 1 else damage//3)
+                    
+                elif label == "button_prev":
+                   i -= 1
+                else:
+                   i += 1
+                button_prev.disabled = i == 0
+                button_next.disabled = i == pages - 1
+                attack.label = f"Attack using {swords[i].replace("_"," ").capitalize()}"
+                await interaction.response.edit_message(embed = em, view=view)
+
+                async def on_timeout():
+                    for children in view.children:
+                       children.disabled = True
+                    await msg.edit(embed = em, view = view)
+
+                msg = await ctx.reply(embed = em, view = view)
+                button_next.callback = on_interaction
+                button_prev.callback = on_interaction
+                attack.callback = on_interaction
+                view.on_timeout = on_timeout
+        else:
+           await ctx.reply("You must either mention a valid user or a valid spawned mob of your server")      
+
     @commands.command(aliases=['adv'])
     @commands.cooldown(1,1800,type= commands.BucketType.user )
     async def adventure(self, ctx):
@@ -305,11 +406,12 @@ class Activity(commands.Cog):
         await ctx.reply(f"You went on an adventure and found a ***{adv.replace("_"," ").capitalize()}***")
                 
     @commands.command(aliases=["travel"])
+    @commands.cooldown(1,100,type= commands.BucketType.user )
     async def go(self, ctx, *, place=None):
         world = data[str(ctx.author.id)]["world"]
         places = [i for i in data[str(ctx.author.id)]["places"] if i in info[f"loc_type_{world}"]]
         if places == []:
-            await ctx.reply("You havent discovered that place yet. First discover the place using the ```m!adv``` command and if you are lucky you'll dicover new places.")
+            await ctx.reply("You havent discovered that place yet. First discover the place using the ``m!adv`` command and if you are lucky you'll dicover new places.")
             return
         if place is None:
             pages = len(places)
@@ -400,17 +502,101 @@ class Activity(commands.Cog):
                 embed = Embed(title="Going",colour=Color.green())
                 embed.set_footer(text= f"Updated at {datetime.now(UTC)}", icon_url=ctx.author.avatar)
                 msg = await ctx.reply(embed=embed)
-
-              
+           
     @commands.command()
+    @commands.cooldown(1,100,type= commands.BucketType.user )
     async def craft(self, ctx):
-        await ctx.reply("This command is still in process try again later :/")
+        inv = data[str(ctx.author.id)]["inv"]
+        images = {}
+        if "crafting_table" in inv:
+           for file in os.listdir("assets/craft_3x3"):
+                images[file[:-4]] = discord.File(f"assets/craft_3x3/{file}", filename=file)
+        else:
+            for file in os.listdir("assets/craft_2x2"):
+                images[file[:-4]] = discord.File(f"assets/craft_2x2/{file}", filename=file)
+        items = list(images.keys())
+        i = 0
+        pages = len(images)
+        craft_value = 1
+        button_prev = Button(style=ButtonStyle.blurple,label="«",disabled=True, custom_id="button_prev")
+        button_next=Button(style=ButtonStyle.blurple,label="»",disabled=pages<=1,custom_id="button_next")
+        craft = Button(style=ButtonStyle.green(), label="Craft",custom_id="craft")
+        em = Embed(title="Crafting",description=f"Viewing recipe for {items[i].replace("_"," ").capitalize()}",color=Color.green())
+        em.set_image(url= f"attachment://{items[i].png}")
+        for item, value in info["craft"][items[i]].items():
+            emoji = info["id"][item]
+            name = item.replace("_"," ").capitalize()
+            if item not in inv or inv[item] < value:
+                em.add_field(name= f":x: {emoji} {name} x {value}",value="")
+                craft.disabled = True
+                craft.style = ButtonStyle.red
+            else:
+                em.add_field(name= f":white_check_mark: {emoji} {name} x {value}",value="")
+        em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+
+        async def on_callback(interaction: discord.Interaction):
+            label = interaction.data["custom_id"]
+            if label == "craft":
+                for item, value in info["craft"][items[i]].items():
+                    await add_item(ctx, ctx.author.id, item, -value)
+                if items[i] in info["tools"]:
+                    data[str(ctx.authot.id)]["tools"].update({items[i]: info["tools"][items[i]]})
+                else:
+                    if items[i] in info["armour"]:
+                        craft_value = info["armour"][items[i]]
+                    elif items[i] == "plank" or items[i] == "stick" or "stair" in items[i]:
+                        craft_value = 4
+                    await add_item(ctx, ctx.author.id, items[i], craft_value)
+                for children in view.children:
+                    children.disabled = True
+                em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+                em.color = ButtonStyle.grey
+                await interaction.response.edit_message(embed=em,view=view,file=images[items[i]])
+                await ctx.send(f"<@{ctx.author.id}> you successfully created a {items[i].replace("_"," ").capitalize()}")
+                return
+            elif label == "button_prev":
+                i -= 1
+            else:
+                i += 1
+            button_prev.disabled = i == 0
+            button_next.disabled = i == len-1
+            em.description = f"Viewing recipe for {items[i].replace("_"," ").capitalize()}"
+            em.set_image(url= f"attachment://{items[i].png}")
+            for item, value in info["craft"][items[i]].items():
+                emoji = info["id"][item]
+                name = item.replace("_"," ").capitalize()
+                if item not in inv or inv[item] < value:
+                    em.add_field(name= f":x: {emoji} {name} x {value}",value="")
+                    craft.disabled = True
+                    craft.style = ButtonStyle.red
+                else:
+                    em.add_field(name= f":white_check_mark: {emoji} {name} x {value}",value="")
+            em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+            await interaction.response.edit_message(embed=em, view=view, file= images[items[i]])
+
+        async def on_timeout():
+            for children in view.children:
+                children.disabled = True
+            msg.edit(embed=em,view=view)
+
+        view = View(timeout=30)
+        view.add_item(button_prev)
+        view.add_item(craft)
+        view.add_item(button_next)
+
+        msg = await ctx.reply(embed= em, view = view, file = images[items[i]])
+
+        button_prev.callback = on_callback
+        button_next.callback = on_callback
+        craft.callback = on_callback
+
+        view.on_timeout = on_timeout
     
     @commands.command(aliases=["loc"] )     
     async def location(self, ctx):
         loc = data[str(ctx.author.id)]["world"]
         loc_sub = data[str(ctx.author.id)]["location"]
-        em = Embed(title=f"{ctx.author.name}'s Location", description=f"World : {loc.capitalize()}\nLocation : {loc_sub.capitalize()}\nUse the ```m!go``` command to travel diffrent places", colour = discord.Colour.blue())
+        em = Embed(title=f"{ctx.author.name}'s Location", description=f"World : {loc.capitalize()}\nLocation : {loc_sub.capitalize()}\nUse the ``m!go`` command to travel diffrent places", colour = discord.Colour.blue())
         await ctx.reply(embed=em)
     
     @commands.command()
@@ -428,7 +614,7 @@ class Activity(commands.Cog):
           value = int(value)
           await add_item(ctx, ctx.author.id, item, value)
         except:
-          await ctx.send("Amount can be ```max```, ```all``` or an integer only")
+          await ctx.send("Amount can be ``max``, ``all`` or an integer only")
           return
       with open("data.json", "w") as f:
         json.dump(profile, f, indent=4)
@@ -457,14 +643,14 @@ class Activity(commands.Cog):
         
     @commands.command()
     async def hi(self, ctx):
-        await ctx.send("Hello I am Minecord, Minecraft Discord Bot ,My prefix is ```m!```, start playing!")
+        await ctx.send("Hello I am Minecord, Minecraft Discord Bot ,My prefix is ``m!``, start playing!")
         
     @commands.command()
     async def invite(self, ctx):
         invite_button = Button(style=ButtonStyle.link, label="Invite", url = discord.utils.oauth_url(self.client.user.id, permissions= discord.Permissions(1126864130526785)))
         vote_button = Button(style=ButtonStyle.link,label = "Vote",url = "https://top.gg/bot/896308161831657492")
         embed = Embed(title="Invite Minecord", description="Glad to hear that you are inviting us to your server.",colour=discord.Colour.light_grey())
-        embed.set_footer(text=f"requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+        embed.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
         view = View(timeout=30)
         view.add_item(invite_button)
         view.add_item(vote_button)
@@ -483,7 +669,7 @@ class Activity(commands.Cog):
         heart = hearts(ctx)
         foods = food(ctx)
         food_bar = data[str(ctx.author.id)]["food"]
-        await ctx.reply(embed = Embed(title=f"{ctx.author.name}'s health", description= f"{health} {heart} {max_health}\n{food_bar} {foods} 100", colour= discord.Colour.red()).set_footer(text=f"requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
+        await ctx.reply(embed = Embed(title=f"{ctx.author.name}'s health", description= f"{health} {heart} {max_health}\n{food_bar} {foods} 100", colour= discord.Colour.red()).set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
     
     @commands.command()
     async def profile(self, ctx, user: discord.Member = None):
@@ -615,7 +801,7 @@ class Activity(commands.Cog):
           profile = json.load(f)[str(ctx.author.id)]
         level = profile["level"]
         xp = profile["xp"]
-        await ctx.reply(embed = Embed(title= f"{ctx.author.name}'s level", description = f"Level : {level}\n Xp : {xp} / {(level+1)*100}",colour = discord.Colour.blurple()).set_footer(text=f"requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
+        await ctx.reply(embed = Embed(title= f"{ctx.author.name}'s level", description = f"Level : {level}\n Xp : {xp} / {(level+1)*100}",colour = discord.Colour.blurple()).set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
 
     @commands.command()
     async def bug(self, ctx,*,bug):
@@ -745,7 +931,7 @@ class Activity(commands.Cog):
     async def fish(self, ctx):
         """Fishing command - complete"""
         if not inv_searcher(ctx, "fishing_rod"):
-          await ctx.reply("You don't even own a ```fishing rod```")
+          await ctx.reply("You don't even own a ``fishing rod``")
           return
         chance = random.randint(1,100)
         quantity = random.randint(1, 3)
@@ -894,7 +1080,7 @@ class Activity(commands.Cog):
             print(e)
 
     @commands.command()
-    @commands.cooldown(1, 5000, type=commands.BucketType.user)
+    @commands.cooldown(1, 5000, type = commands.BucketType.user)
     async def cave(self, ctx):
         places = data[str(ctx.author.id)]["places"]
         cave = ""
@@ -929,7 +1115,7 @@ class Activity(commands.Cog):
         log_cmd(ctx, "cave")
 
     @commands.command()
-    @commands.cooldown(1, 150, type=commands.BucketType.user)
+    @commands.cooldown(1, 150, type = commands.BucketType.user)
     async def chop(self, ctx):
         log_cmd(ctx,'chop')
         if inv_searcher(ctx, "wooden_axe"):
@@ -959,7 +1145,7 @@ class Activity(commands.Cog):
         await ctx.reply(f"You brought {quantity} logs {emoji}" )
 
     @commands.command()
-    @commands.cooldown(1, 2000, type=commands.BucketType.user)
+    @commands.cooldown(1, 2000, type = commands.BucketType.user)
     async def crop(self, ctx):
         em = Embed(title= f"{ctx.author.name} Crop Production", description = "Your farm yielded this/n", colour= Color.green())
         em.set_footer(text=f"{ctx.author} croped their farm" , icon_url= ctx.author.avatar)

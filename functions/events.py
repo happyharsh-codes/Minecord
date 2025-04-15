@@ -74,9 +74,8 @@ class Events:
                 continue
         else:
             invite = "No invite perms"
-
         if user != None:
-            await user.send(f"Minecord left a server {guild.name}\n{invite}",)
+            await user.send(f"Minecord left a server {guild.name}\n{invite}")
     
     async def on_guild_join(self, guild: discord.Guild):
         '''Sends a welcome message on joining'''
@@ -114,14 +113,12 @@ class Events:
             json.dump(server,f,indent=4)
 
     async def on_command_completion(self, ctx):
-        chance = random.randint(1,3)
-        tip = random.randint(1,10)
-        if chance == 2:       
-            await xp_manager(ctx, random.randint(1,10))
-        if tip == 10:
+        tip = random.randint(1,8)
+        await xp_manager(ctx, random.randint(1,10))
+        if tip == 8:
             tip = info["tips"]
             await ctx.send(f"**Quick Tip** : {random.choice(tip)}")
-        if (random.randint(1,15)) == 1:
+        if (random.randint(1,10)) == 1:
             await spawn(ctx)
 
     async def on_command_error(self, ctx, error):

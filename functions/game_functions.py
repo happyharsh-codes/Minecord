@@ -1,7 +1,7 @@
 import math
 from config import*
 import discord, random
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timedelta
 
 
 def has_profile(id):
@@ -78,34 +78,37 @@ def log_cmd(ctx, cmd):
 async def spawn(ctx):
     mob = random.choice(list(info["mob"].keys()))
     if str(ctx.guild.id) not in server:
-        await ctx.send("A mob has spawned.\nUse command ```m!kill <mob_name>``` to kill the mob")
+        await ctx.send(f"A {"wild" if random.randrange(0,1)==1 else "cute"} {mob.replace("_", " ").capitalize()} has spawned.\nUse command ``m!kill {mob}`` to kill the mob")
         if str(ctx.guild.id) in server:
-            server[str(ctx.guild.id)].update({mob, random.randint(100,500)})
+            server[str(ctx.guild.id)][mob] = random.randint(100,500)
         else:
-            server[str(ctx.guild.id)] = {mob, random.randint(100,500)}
+            server.update({[str(ctx.guild.id)]: {mob: [info["mob_health"][mob], datetime.now(),ctx]}})
 
-async def despawn(ctx):
-    if str(ctx.guild.id) in server:
-        mob = server[str(ctx.guild.id)][0]
-        await ctx.channel.send(f"Oh oo {mob} despawned.")
-        server.pop(str(ctx.guild.id))
+async def despawn():
+    for id in server:
+        for mob in id:
+            if datetime.now() >= id[mob][1] + timedelta(minutes=2):
+                await id[mob][2].send(f"Oho a {mob.replace("_"," ").capitalize()} despawned")
+                id.pop(mob)
+                if id == {}:
+                    server.pop(id)
         
 async def xp_manager(ctx, xp_add):
     """Increases or decreases xp"""
     xp = data[str(ctx.author.id)]["xp"]
     level = data[str(ctx.author.id)]["level"]
-    xp += xp_add
     if build_searcher(ctx, "xp_farm"):
-        data[str(ctx.author.id)]["xp"] += xp
-    if xp >= (level+1)*100:        
+        xp_add *= random.randint(1,3)
+    xp += xp_add
+    if xp >= (level+1)*100:    
         xp -= (level+1) * 100
         level += 1
         try:
             await ctx.author.send(f"{ctx.author.mention} you reached level {level}")
         except:
             pass
-        await ctx.send(f"{ctx.author.mention} you reached level {level}")
-    data[str(ctx.author.id)]["xp"] = xp
+        await ctx.send(f"{ctx.author.mention} you reached ***level {level}***!!")
+    data[str(ctx.author.id)]["xp"] += xp
     data[str(ctx.author.id)]["level"] = level
         
 
@@ -140,14 +143,20 @@ def food_level(ctx, value):
             food = 0
     data[str(ctx.author.id)]["food"] = food
         
-def hearts(ctx):
+def hearts(ctx, mob = False):
     """Return String of hearts according to user's health."""
     health = data[str(ctx.author.id)]["health"]
     max_health = data[str(ctx.author.id)]["max_health"]
+    if mob:
+        health = server[str(ctx.guild.id)][mob]
+        max_health = info["mob_health"][mob]
     heart = "<:minecraft_heart:898867063924330507>"
     half_heart = "<:half_heart:914832762773602324>"
+    empty_heart = "<:empty_heart:1361525372239220757> "
     user_heart = ""
-    if health == max_health:
+    #Bringing health in percentage
+    health = (health//max_health) *100
+    if health == 100:
         user_heart = heart*10
         return user_heart
     for i in range(1,health+1):
@@ -156,6 +165,7 @@ def hearts(ctx):
             user_heart = user_heart.replace(half_heart, heart)
         elif (i % 5) == 0:
             user_heart += half_heart
+    user_heart += (10 - math.round(health/10))* empty_heart
     return user_heart
 
 def food(ctx):
@@ -165,6 +175,7 @@ def food(ctx):
         return "0"
     foode = "<:food:914830073067102218>"
     half_food = "<:half_food:914829417501589546>"
+    empty_food = "<:empty_food:1361519163163807916>"
     user_food = ""
     if foods == 100:
         user_food = foode*10
@@ -175,6 +186,7 @@ def food(ctx):
             user_food = user_food.replace(half_food, foode)
         elif (i % 5) == 0:
             user_food += half_food
+    user_food += (10 - math.round(foods/10))* empty_food
     return user_food
 
 def inv_searcher(ctx, *items):

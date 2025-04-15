@@ -249,10 +249,11 @@
         "netherite_leggings": "<:netherite_leggings:909720096467992586>",
         "netherite_boots": "<:netherite_boots:909720110346932314>",
         "stick": "<:stick:917330163304366080>",
-        "quartz_stait": "<:quartz_stair:899950417386029087>",
+        "quartz_stair": "<:quartz_stair:899950417386029087>",
         "netherite_scarp": "<:netherite_scarp:917372181523070987>",
         "progress_filled": "<:progress_filled:1359176824978018535>",
-        "progress_empty": "<:progress_empty:1359176792598122759>"
+        "progress_empty": "<:progress_empty:1359176792598122759>",
+        "poppy": "<:poppy:1361531978293317814>"
     },
     "mob": {
         "cow": [
@@ -574,9 +575,9 @@
         "Always keep an eye on your health and hunger."
     ],
     "craft": {
-        "stick": {"plank":1},
+        "stick": {"plank":2},
         "netherite_ingot": {"netherite_scarp": 4, "gold_ingot":4},
-        "bow": {"stick": 3, "web":1},
+        "bow": {"stick": 3, "web":3},
         "fishing_rod": {"stick":3, "web":2},
         "wooden_sword":{ "plank": 2, "stick": 1},
         "wooden_pickaxe": { "plank": 3, "stick": 2},
@@ -603,17 +604,12 @@
         "diamond_axe": {"diamond":3, "stick":2},
         "diamond_shovel": {"diamond":1, "stick":2},
         "diamond_hoe": {"diamond":2, "stick":2},
-        "netherite_sword": { "nethrite_ingot": 2, "stick": 1},
-        "netherite_pickaxe": { "netherite_ingot": 3, "stick": 2},
-        "netherite_axe": {"netherite_ingot":3, "stick":2},
-        "netherite_shovel": {"netherite_ingot":1, "stick":2},
-        "netherite_hoe": {"netheritr_ingot":2, "stick":2},
         "leather_helmet": {"leather":5},
         "leather_chestplate": {"leather": 8},
         "leather_leggings": {"leather": 7},
         "leather_boots": {"leather":4},
         "iron_helmet": {"iron_ingot":5},
-        "iron_chestplate": {"iron_ingot":88},
+        "iron_chestplate": {"iron_ingot":8},
         "iron_leggings": {"iron_ingot":7 },
         "iron_boots": {"iron_ingot":4},
         "gold_helmet": {"gold_ingot":5},
@@ -624,17 +620,14 @@
         "diamond_chestplate": {"diamond":8},
         "diamond_leggings": {"diamond":7},
         "diamond_boots": {"diamond":4},
-        "netherite_helmet": {"netherite_ingot":5},
-        "netherite_chestplate": {"netherite_ingot":8},
-        "netherite_leggings": {"netherite_ingot":7 },
-        "netherite_boots": {"netherite_ingot":4},
         "chest": {"plank":8},
         "wooden_stair": {"plank":7},
         "stone_stair": {"stone": 7},
         "cobblestone_stair": {"cobblestone": 7},
         "quartz_stair":{"nether_quarts": 7},
         "crafting_table": {"planks": 4},
-        "plank": {"log":1}
+        "plank": {"log":1},
+        "bread": {"wheat":3}
     },
     "images": {
         "cave": "https://static.wikia.nocookie.net/minecraft_gamepedia/images/6/6a/Stone_cave_pillars.png/revision/latest/scale-to-width-down/1440?cb=20210211023543",
@@ -651,6 +644,18 @@
     }, 
     "loc_type_over": ["village", "ravage", "cave", "desert_temple", "igloo", "jungle_temple", "underground_cave", "mineshaft", "shipwreck", "ocean", "pillager_tower", "witch's_hut", "woodland_mansion", "ruined_portal", "nether_portal", "strong_hold", "end_portal"],
     "loc_type_nether": ["nether_foretress", "bastion-remnant", "crimson_forest", "wrapped_forest", "ruined_portal", "nether_portal"],
-    "loc_type_end": ["end_portal", "end_city", "end_gateway", "end_ship"]
-
+    "loc_type_end": ["end_portal", "end_city", "end_gateway", "end_ship"],
+    "mob_health":{
+        "chicken": 100,
+        "cow": 150,
+        "sheep": 120,
+        "pig": 170,
+        "zombie": 250,
+        "skeleton": 300,
+        "enderman": 500,
+        "creeper": 250,
+        "spider": 250,
+        "iron_golem": 1000,
+        "ender_dragon": 10000
+    }
 }

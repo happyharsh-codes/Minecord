@@ -29,20 +29,16 @@ async def on_ready():
     dumping_loop.start()
 
 #-----Loop-----#
-@tasks.loop(seconds=20)
+@tasks.loop(seconds=10)
 async def loop():
     for msg in list(message):
         print("Updating messages")
         em = message[msg][2]
         ctx = message[msg][4]
-        if "Travelling" in em.title:
-            ter = " "
-        elif "Mining" in em.title:
-            ter = "\n"
-        words = em.description.split(ter)
+        words = em.description.split("\n")
         message[msg][3] +=1
-        words[1] = f"{info["id"]["progress_filled"]*message[msg][3]}{info["id"]["progress_empty"]*(10-message[msg][3])}"
-        em.description = ter.join(words)
+        words[-1] = f"{info["id"]["progress_filled"]*message[msg][3]}{info["id"]["progress_empty"]*(10-message[msg][3])}"
+        em.description = "\n".join(words)
         em.set_footer(text=f"Updated at {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
         #Updating messages
         await msg.channel.send(embed=em)
@@ -90,6 +86,7 @@ async def loop():
                     pass
 @tasks.loop(minutes=1)
 async def dumping_loop():
+    await despawn()
     print("dumping files")
     with open("data.json", "w") as f:
         json.dump(data,f,indent=4)
