@@ -114,12 +114,19 @@ class Events:
 
     async def on_command_completion(self, ctx):
         tip = random.randint(1,8)
-        await xp_manager(ctx, random.randint(1,10))
-        if tip == 8:
-            tip = info["tips"]
-            await ctx.send(f"**Quick Tip** : {random.choice(tip)}")
+        try:
+            await xp_manager(ctx, random.randint(1,10))
+            if tip == 8:
+                tip = info["tips"]
+                await ctx.send(f"**Quick Tip** : {random.choice(tip)}")
+        except Exception as e:
+            await self.client.get_user(894072003533877279).send(e)
         if (random.randint(1,10)) == 1:
-            await spawn(ctx)
+            try:
+                await spawn(ctx)
+            except Exception as e:
+                await self.client.get_user(894072003533877279).send(e)
+    
 
     async def on_command_error(self, ctx, error):
         '''Handelling errors'''
