@@ -263,16 +263,16 @@ class Activity(commands.Cog):
         elif mob.lower() in info["mob"]:
             mob = mob.lower()
             if str(ctx.guild.id) not in server:
-                await ctx.reply("Oho there are no available mobs in your server.\nKeep playing and one will spawn automaticly")
+                await ctx.reply("Oho there are no available mobs in your server.\nKeep playing and one will spawn automatically")
                 return
-            if mob not in server[(str(ctx.author.id))]:
-                await ctx.reply("Oho that mob has not spawned in your server. Look for other mobs.\nKeep playing and one will spawna automaticly")
+            if mob not in server[str(ctx.author.id)]:
+                await ctx.reply("Oho that mob has not spawned in your server. Look for other mobs.\nKeep playing and one will spawn automatically")
                 return
             swords = []
             for tool in data[str(ctx.author.id)]["tools"]:
                 if "sword" in tool:
                    swords.append(tool)
-            em = Embed(title=f"Attacking {mob.replace("_"," ").capitalze()}",description="",color=Color.red)
+            em = Embed(title=f"Attacking {mob.replace("_"," ").capitalize()}",description="",color=Color.red)
             if swords == []:
                em.description += "You have no sword in your inventory!!"
             pages = len(swords)
@@ -302,7 +302,7 @@ class Activity(commands.Cog):
                         damage = random.randint(65, 75)
                     elif swords[i] == "netherite_sword" :
                         damage = random.randint(80,100)
-                    server[str(ctx.guild.id)][mob] -= damage
+                    server[str(ctx.guild.id)][mob][0] -= damage
                     if server[str(ctx.guild.id)][mob] <= 0:
                         #Mob killed by user
                         server[str(ctx.guild.id)].pop(mob)
@@ -320,7 +320,7 @@ class Activity(commands.Cog):
                         em.set_thumbnail(url=ctx.author.avatar)
                         for item in items:
                            emoji = info["id"][item]
-                           name = item.remove("_"," ").capitalize()
+                           name = item.replace("_"," ").capitalize()
                            em.description += f"\n{emoji} {name} x {items[item]}"
                            await add_item(ctx, ctx.author.id, item, items[item])
                         if swords != []:    
@@ -329,7 +329,7 @@ class Activity(commands.Cog):
                         return
                     #Mob attacked by user
                     heart = hearts(ctx, mob=mob)
-                    await ctx.send(embed=Embed(title=f"{mob.replace("_"," ").capitalize()} was attacked by {ctx.author.name}", color=Color.red).set_image(url=f"attachment://{mob.png}").set_thumbnail(url=ctx.author.avatar).add_field(name=heart,value=""),files = images[mob])
+                    await ctx.send(embed=Embed(title=f"{mob.replace("_"," ").capitalize()} was attacked by {ctx.author.name}", color=Color.red).set_image(url=f"attachment://{mob}.png").set_thumbnail(url=ctx.author.avatar).add_field(name=heart,value=""),files = images[mob])
                     if swords != []:    
                             await tool_manager(ctx, swords[i], damage//2 if random.randint(0,1) == 1 else damage//3)
                     
@@ -342,16 +342,16 @@ class Activity(commands.Cog):
                 attack.label = f"Attack using {swords[i].replace("_"," ").capitalize()}"
                 await interaction.response.edit_message(embed = em, view=view)
 
-                async def on_timeout():
-                    for children in view.children:
-                       children.disabled = True
-                    await msg.edit(embed = em, view = view)
+            async def on_timeout():
+                for children in view.children:
+                    children.disabled = True
+                await msg.edit(embed = em, view = view)
 
-                msg = await ctx.reply(embed = em, view = view)
-                button_next.callback = on_interaction
-                button_prev.callback = on_interaction
-                attack.callback = on_interaction
-                view.on_timeout = on_timeout
+            msg = await ctx.reply(embed = em, view = view)
+            button_next.callback = on_interaction
+            button_prev.callback = on_interaction
+            attack.callback = on_interaction
+            view.on_timeout = on_timeout
         else:
            await ctx.reply("You must either mention a valid user or a valid spawned mob of your server")      
 
