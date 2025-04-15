@@ -81,7 +81,7 @@ async def spawn(ctx):
     if str(ctx.guild.id) in server:
         server[str(ctx.guild.id)][mob] = [info["mob_health"][mob], datetime.now(),ctx]
     else:
-        server.update({[str(ctx.guild.id)]: {mob: [info["mob_health"][mob], datetime.now(),ctx]}})
+        server.update({str(ctx.guild.id): {mob: [info["mob_health"][mob], datetime.now(),ctx]}})
 
 async def despawn():
     for id in server:
