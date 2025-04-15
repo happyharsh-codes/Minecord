@@ -77,7 +77,7 @@ def log_cmd(ctx, cmd):
 
 async def spawn(ctx):
     mob = random.choice(list(info["mob"].keys()))
-    await ctx.send(f"A {"wild" if random.randrange(0,1)==1 else "cute"} {mob.replace("_", " ").capitalize()} has spawned.\nUse command ``m!kill {mob}`` to kill the mob")
+    await ctx.send(f"A {'wild' if random.randrange(1,2)==1 else 'cute'} {mob.replace('_', ' ').capitalize()} has spawned.\nUse command ``m!kill {mob}`` to kill the mob")
     if str(ctx.guild.id) in server:
         server[str(ctx.guild.id)][mob] = [info["mob_health"][mob], datetime.now(),ctx]
     else:
@@ -107,7 +107,7 @@ async def xp_manager(ctx, xp_add):
         except:
             pass
         await ctx.send(f"{ctx.author.mention} you reached ***level {level}***!!")
-    data[str(ctx.author.id)]["xp"] += xp
+    data[str(ctx.author.id)]["xp"] = xp
     data[str(ctx.author.id)]["level"] = level
         
 
