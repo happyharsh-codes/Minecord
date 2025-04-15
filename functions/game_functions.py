@@ -147,7 +147,7 @@ def hearts(ctx, mob = False):
     health = data[str(ctx.author.id)]["health"]
     max_health = data[str(ctx.author.id)]["max_health"]
     if mob:
-        health = server[str(ctx.guild.id)][mob]
+        health = server[str(ctx.guild.id)][mob][0]
         max_health = info["mob_health"][mob]
     heart = "<:minecraft_heart:898867063924330507>"
     half_heart = "<:half_heart:914832762773602324>"
