@@ -265,7 +265,7 @@ class Activity(commands.Cog):
             if str(ctx.guild.id) not in server:
                 await ctx.reply("Oho there are no available mobs in your server.\nKeep playing and one will spawn automatically")
                 return
-            if mob not in server[str(ctx.author.id)]:
+            if mob not in server[str(ctx.guild.id)]:
                 await ctx.reply("Oho that mob has not spawned in your server. Look for other mobs.\nKeep playing and one will spawn automatically")
                 return
             swords = []
