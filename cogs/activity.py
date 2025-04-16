@@ -269,10 +269,10 @@ class Activity(commands.Cog):
                 await ctx.reply("Oho that mob has not spawned in your server. Look for other mobs.\nKeep playing and one will spawn automatically")
                 return
             swords = []
-            for tool in data[str(ctx.author.id)]["tools"]:
+            for tool in data[str(ctx.guild.id)]["tools"]:
                 if "sword" in tool:
                    swords.append(tool)
-            em = Embed(title=f"Attacking {mob.replace("_"," ").capitalize()}",description="",color=Color.red)
+            em = Embed(title=f"Attacking {mob.replace("_"," ").capitalize()}",description="",color=Color.red())
             if swords == []:
                em.description += "You have no sword in your inventory!!"
             pages = len(swords)
@@ -316,7 +316,7 @@ class Activity(commands.Cog):
                            items[i] = random.randint(1,4)
                         await interaction.response.edit_message(embed = em, view=view)
                         await ctx.reply(f"<@{ctx.author.id}> you killed {mob.replace("_"," ").capitalize()}")
-                        em = Embed(title=f"{ctx.author.name} killed {mob.replace("_"," ").capitalize()}",description="Items Recieved: ", color=Color.red)
+                        em = Embed(title=f"{ctx.author.name} killed {mob.replace("_"," ").capitalize()}",description="Items Recieved: ", color=Color.red())
                         em.set_thumbnail(url=ctx.author.avatar)
                         for item in items:
                            emoji = info["id"][item]
@@ -329,7 +329,7 @@ class Activity(commands.Cog):
                         return
                     #Mob attacked by user
                     heart = hearts(ctx, mob=mob)
-                    await ctx.send(embed=Embed(title=f"{mob.replace("_"," ").capitalize()} was attacked by {ctx.author.name}", color=Color.red).set_image(url=f"attachment://{mob}.png").set_thumbnail(url=ctx.author.avatar).add_field(name=heart,value=""),files = images[mob])
+                    await ctx.send(embed=Embed(title=f"{mob.replace("_"," ").capitalize()} was attacked by {ctx.author.name}", color=Color.red()).set_image(url=f"attachment://{mob}.png").set_thumbnail(url=ctx.author.avatar).add_field(name=heart,value=""),files = images[mob])
                     if swords != []:    
                             await tool_manager(ctx, swords[i], damage//2 if random.randint(0,1) == 1 else damage//3)
                     
