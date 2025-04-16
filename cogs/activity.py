@@ -519,7 +519,7 @@ class Activity(commands.Cog):
         craft_value = 1
         button_prev = Button(style=ButtonStyle.blurple,label="«",disabled=True, custom_id="button_prev")
         button_next=Button(style=ButtonStyle.blurple,label="»",disabled=pages<=1,custom_id="button_next")
-        craft = Button(style=ButtonStyle.green(), label="Craft",custom_id="craft")
+        craft = Button(style=ButtonStyle.green, label="Craft",custom_id="craft")
         em = Embed(title="Crafting",description=f"Viewing recipe for {items[i].replace("_"," ").capitalize()}",color=Color.green())
         em.set_image(url= f"attachment://{items[i].png}")
         for item, value in info["craft"][items[i]].items():
@@ -558,7 +558,9 @@ class Activity(commands.Cog):
             else:
                 i += 1
             button_prev.disabled = i == 0
-            button_next.disabled = i == len-1
+            button_next.disabled = i == pages-1
+            craft.disabled = False
+            craft.style = ButtonStyle.green
             em.description = f"Viewing recipe for {items[i].replace("_"," ").capitalize()}"
             em.set_image(url= f"attachment://{items[i].png}")
             for item, value in info["craft"][items[i]].items():
