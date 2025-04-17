@@ -29,7 +29,7 @@ async def on_ready():
     dumping_loop.start()
 
 #-----Loop-----#
-@tasks.loop(seconds=10)
+@tasks.loop(seconds=30)
 async def loop():
     for msg in list(message):
         print("Updating messages")
@@ -54,7 +54,7 @@ async def loop():
                 for block in blocks_mined:
                     descrip += f"{info["id"][block]} {block.replace("_", " ").capitalize()} x {blocks_mined[block]}\n"
                     await add_item(ctx, ctx.author.id, block, blocks_mined[block])
-                    await tool_manager(ctx,message[msg][5], random.randint(1,3)*blocks_mined[block])
+                    await tool_manager(ctx,message[msg][5], -random.randint(1,3)*blocks_mined[block])
                 em = discord.Embed(title="Mining Result", description=descrip, color=discord.Color.green())
                 await ctx.send(content=f"<@{ctx.author.id}> your mining results", embed=em)
 
@@ -77,6 +77,7 @@ async def loop():
                 await kill(id)
         elif data[id]["food"] <= 0:
             data[id]["health"] -= random.randint(1,10)
+            data[id]["food"] = 0
             if data[id]["health"] <= 0:
                 await kill(id, client.get_user(int(id)), "You starved to death")
             else:
@@ -92,8 +93,8 @@ async def dumping_loop():
         json.dump(data,f,indent=4)
     #with open("messages.json", "w") as f:
         #json.dump(message,f,indent=4)
-    with open("server.json", "w") as f:
-        json.dump(server,f,indent=4)
+    #with open("server.json", "w") as f:
+        #json.dump(server,f,indent=4)
 
 #-----Events-----#
 client.event(event.on_message)

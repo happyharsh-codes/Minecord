@@ -77,20 +77,23 @@ def log_cmd(ctx, cmd):
 
 async def spawn(ctx):
     mob = random.choice(list(info["mob"].keys()))
-    await ctx.send(f"A {'wild' if random.randrange(1,2)==1 else 'cute'} {mob.replace('_', ' ').capitalize()} has spawned.\nUse command ``m!kill {mob}`` to kill the mob")
+    await ctx.send(embed=discord.Embed(title=f"A {'wild' if random.randint(1,2)==1 else 'cute'} {mob.replace('_', ' ').capitalize()} has spawned.\nUse command ``m!kill {mob}`` to kill the mob",color=discord.Color.green()).set_image(url=f"attachment://{mob}.png"), file = discord.File(f"assets/mobs/{mob}.png",filename=f"{mob}.png"))
     if str(ctx.guild.id) in server:
+        if mob in server[str(ctx.guild.id)]:
+            return
         server[str(ctx.guild.id)][mob] = [info["mob_health"][mob], datetime.now(),ctx]
     else:
         server[str(ctx.guild.id)] = {mob: [info["mob_health"][mob], datetime.now(), ctx]}
         
 async def despawn():
     for id in server:
-        for mob in id:
-            if datetime.now() >= id[mob][1] + timedelta(minutes=2):
-                await id[mob][2].send(f"Oho a {mob.replace("_"," ").capitalize()} despawned")
-                id.pop(mob)
+        for mob in server[id]:
+            if datetime.now() >= server[id][mob][1] + timedelta(minutes=2):
+                await server[id][mob][2].send(f"Oho a {mob.replace("_"," ").capitalize()} despawned")
+                server[id].pop(mob)
                 if id == {}:
                     server.pop(id)
+                return
         
 async def xp_manager(ctx, xp_add):
     """Increases or decreases xp"""
@@ -154,24 +157,21 @@ def hearts(ctx, mob = False):
     empty_heart = "<:empty_heart:1361525372239220757> "
     user_heart = ""
     #Bringing health in percentage
-    health = (health//max_health) *100
+    health = int(health/max_health *100)
     if health == 100:
         user_heart = heart*10
         return user_heart
-    for i in range(1,health+1):
-        if (i % 10) == 0:
-            # Replacing Half heart by full heart.
-            user_heart = user_heart.replace(half_heart, heart)
-        elif (i % 5) == 0:
-            user_heart += half_heart
-    user_heart += (10 - math.round(health/10))* empty_heart
+    user_heart += health//10 * heart
+    if health%10 > 5 or health < 10:
+        user_heart += half_heart
+        user_heart += (9-health//10)*empty_heart
+    else:
+        user_heart += (10-health//10)*empty_heart
     return user_heart
 
 def food(ctx):
     """Return String of foods according to user's food level."""
     foods = data[str(ctx.author.id)]["food"]
-    if foods == 0:
-        return "0"
     foode = "<:food:914830073067102218>"
     half_food = "<:half_food:914829417501589546>"
     empty_food = "<:empty_food:1361519163163807916>"
@@ -179,13 +179,12 @@ def food(ctx):
     if foods == 100:
         user_food = foode*10
         return user_food
-    for i in range(1,foods+1):
-        if (i % 10) == 0:
-            # Replacing Half heart by full heart.
-            user_food = user_food.replace(half_food, foode)
-        elif (i % 5) == 0:
-            user_food += half_food
-    user_food += (10 - math.round(foods/10))* empty_food
+    user_food += foods//10 * foode
+    if foods%10 > 5 or foods < 10:
+        user_food += half_food
+        user_food += (9-foods//10)*empty_food
+    else:
+        user_food += (10-foods//10)*empty_food
     return user_food
 
 def inv_searcher(ctx, *items):
@@ -291,5 +290,5 @@ def mining_result(ctx, tool):
     blocks = random.choices(blocks,k=no_of_blocks)
     blocks_dict = {}
     for block in blocks:
-        blocks_dict[block] = random.randint(1,20)
+        blocks_dict[block] = random.randint(1,10)
     return blocks_dict

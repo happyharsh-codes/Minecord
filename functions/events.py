@@ -109,8 +109,8 @@ class Events:
             json.dump(data,f,indent=4)
         #with open("messages.json", "w") as f:
             #json.dump(message,f,indent=4)
-        with open("server.json", "w") as f:
-            json.dump(server,f,indent=4)
+        #with open("server.json", "w") as f:
+            #json.dump(server,f,indent=4)
 
     async def on_command_completion(self, ctx):
         tip = random.randint(1,8)

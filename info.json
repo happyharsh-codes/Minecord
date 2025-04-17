@@ -1,7 +1,10 @@
 {
     "block": [
-        "log",
         "plank",
+        "stick",
+        "log",
+        "chest",
+        "crafting_table",
         "cobblestone",
         "stone",
         "dirt",
@@ -144,6 +147,8 @@
     "id": {
         "log": "<:log:898892437936820264>",
         "plank": "<:plank:898892387366080522>",
+        "arrow": "<:arrow:1362281759076515840>",
+        "crafting_table": "<:crafting_table:918654234390573058>",
         "cobblestone": "<:cobblestone:898892621555068949>",
         "stone": "<:stone:898867423527186453>",
         "dirt": "<:dirt:898890207682772992>",
@@ -624,8 +629,8 @@
         "wooden_stair": {"plank":7},
         "stone_stair": {"stone": 7},
         "cobblestone_stair": {"cobblestone": 7},
-        "quartz_stair":{"nether_quarts": 7},
-        "crafting_table": {"planks": 4},
+        "quartz_stair":{"nether_quartz": 7},
+        "crafting_table": {"plank": 4},
         "plank": {"log":1},
         "bread": {"wheat":3}
     },
