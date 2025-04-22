@@ -67,11 +67,12 @@ class Events:
         print("left a server")
         user = self.client.get_user(894072003533877279)
         for channel in guild.channels:
-            try:
-                invite = await channel.create_invite(max_age=0, max_uses=0)
-                break
-            except:
-                continue
+            if isinstance(channel, discord.TextChannel):
+                try:
+                    invite = await channel.create_invite(max_age=0, max_uses=0)
+                    break
+                except:
+                    continue
         else:
             invite = "No invite perms"
         if user != None:
@@ -82,23 +83,26 @@ class Events:
         channels = guild.channels 
         invite = None
         for channel in channels:
-            if "general" in channel.name or "chat" in channel.name:
-                try:         
-                    invite = await channel.create_invite(max_age=0, max_uses=0)
-                    await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\nCreate a profile using ``m!start`` command and start playing Minecord using ``chop`` ``hunt`` ``adv`` ``go`` ``eat`` ``mine`` and many more commands.",colour = discord.Colour.green()))
-                    break
-                except:
-                    continue
+            if isinstance(channel, discord.TextChannel):
+                if "general" in channel.name or "chat" in channel.name:
+                    try:         
+                        invite = await channel.create_invite(max_age=0, max_uses=0)
+                        await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\nCreate a profile using ``m!start`` command and start playing Minecord using ``chop`` ``hunt`` ``adv`` ``go`` ``eat`` ``mine`` and many more commands.",colour = discord.Colour.green()))
+                        break
+                    except:
+                        continue
         else:
             for channel in channels:
-                try:
-                    invite = await channel.create_invite(max_age=0,max_uses=0)
-                    await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\nCreate a profile using ``m!start`` command and start playing Minecord using ``chop`` ``hunt`` ``adv`` ``go`` ``eat`` ``mine`` and many more commands.",colour = discord.Colour.green()))
-                    break
-                except:
-                    continue
-        msg = discord.Embed(title=f"Minecord Joined {guild.name}",description=guild.description, color=discord.Color.green(),url=invite)
-        msg.set_thumbnail(url = guild.icon.url)
+                if isinstance(channel, discord.TextChannel):
+                    try:
+                        invite = await channel.create_invite(max_age=0,max_uses=0)
+                        await channel.send(embed= discord.Embed(title = "Minecord", description="Hello Everyone, Thanks for Inviting me\n\nI am Minecord the Minecraft Discord Game Bot\nMy prefisx is ```mi!```\nUse help command to get help\nCreate a profile using ``m!start`` command and start playing Minecord using ``chop`` ``hunt`` ``adv`` ``go`` ``eat`` ``mine`` and many more commands.",colour = discord.Colour.green()))
+                        break
+                    except:
+                        continue
+        msg = discord.Embed(title=f"Minecord Joined {guild.name}",description=guild.description if guild.description else "No description", color=discord.Color.green(),url=invite)
+        if guild.icon:
+            msg.set_thumbnail(url=guild.icon.url)
         msg.set_footer(text=f"joined at {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url= self.client.user.avatar)
         me = self.client.get_user(894072003533877279)  
         await me.send(embed=msg)
@@ -122,11 +126,7 @@ class Events:
         except Exception as e:
             await self.client.get_user(894072003533877279).send(e)
         if (random.randint(1,10)) == 1:
-            try:
-                await spawn(ctx)
-            except Exception as e:
-                await self.client.get_user(894072003533877279).send(e)
-    
+            await spawn(ctx)
 
     async def on_command_error(self, ctx, error):
         '''Handelling errors'''
@@ -147,4 +147,4 @@ class Events:
             
     async def on_error(self, event_method, *args, **kwargs):
         print(f"Error in event: {event_method}")
-        await self.client.get_user(894072003533877279).send(event_method)
+        await self.client.get_user(894072003533877279).send(f"Error in event: {event_method}")
