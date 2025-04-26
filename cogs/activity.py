@@ -417,7 +417,7 @@ class Activity(commands.Cog):
         await ctx.reply(f"You went on an adventure and found a ***{adv.replace("_"," ").capitalize()}***")
                 
     @commands.command(aliases=["travel"])
-    @commands.cooldown(1,100,type= commands.BucketType.user )
+    @commands.cooldown(1,50,type= commands.BucketType.user )
     async def go(self, ctx, *, place=None):
         world = data[str(ctx.author.id)]["world"]
         places = [i for i in data[str(ctx.author.id)]["places"] if i in info[f"loc_type_{world}"]]
@@ -515,7 +515,7 @@ class Activity(commands.Cog):
                 msg = await ctx.reply(embed=embed)
            
     @commands.command()
-    @commands.cooldown(1,50,type= commands.BucketType.user )
+    @commands.cooldown(1,15,type= commands.BucketType.user )
     async def craft(self, ctx):
         inv = data[str(ctx.author.id)]["inv"]
         all_items = list(info["craft"].keys())
