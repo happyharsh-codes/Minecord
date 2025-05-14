@@ -105,15 +105,31 @@ class Activity(commands.Cog):
         
     @commands.command()
     @commands.cooldown(1,200,type= commands.BucketType.user )
-    async def mine(self,ctx):
-        tools = data[str(ctx.author.id)]["tools"]
+    async def mine(self,ctx, block=None):
         pickaxe = []
+        tools = data[str(ctx.author.id)]["tools"]
         for tool in tools:
             if "pickaxe" in tool:
                 pickaxe.append(tool)
         if pickaxe == []:
             await ctx.reply("You need a pickaxe to mine stupid haha 😝😝")
             return
+        if block is not None:
+            mineable = ["cobblestone","stone","dirt","andesite","diorite","gravel","sand","iron_ore","coal","gold_ore",]
+            block = block.lower()
+            if block not in mineable:
+                await ctx.reply("You must enter a valid mineable block")
+                return
+            em = Embed(title=f"{ctx.author.name} went on Mining", description=f"You went on for mining using {pickaxe[0].replace("_"," ").capitalize()}.\n Use the ``mreturn`` command to return home\n{info["id"]["progress_filled"]}{info["id"]["progress_empty"]*9}",color=Color.green())
+            em.set_footer(text=f"Updated at {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+            msg_send = await ctx.reply(embed=em)
+            try:
+                msg_dm = await ctx.author.send(embed=em)
+            except Exception as e:
+                msg_dm = None
+            message[msg_send] = [msg_send, msg_dm, em, 1, ctx, pickaxe[0]]
+            log_cmd(ctx,"mine")
+
         pages = len(pickaxe)
         index = 0
         em = Embed(title="Mining",color=Color.green())
@@ -141,7 +157,7 @@ class Activity(commands.Cog):
                 for children in view.children:
                     children.disabled = True
                 await interaction.response.edit_message(embed=em,view=view)
-                em = Embed(title=f"{ctx.author.name} went on Mining", description=f"You went on for mining using {pickaxe[index].replace("_"," ").capitalize()}.\n Use the ``m!return`` command to return home\n{info["id"]["progress_filled"]}{info["id"]["progress_empty"]*9}",color=Color.green())
+                em = Embed(title=f"{ctx.author.name} went on Mining", description=f"You went on for mining using {pickaxe[index].replace("_"," ").capitalize()}.\n Use the ``mreturn`` command to return home\n{info["id"]["progress_filled"]}{info["id"]["progress_empty"]*9}",color=Color.green())
                 em.set_footer(text=f"Updated at {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
                 msg_send = await ctx.reply(embed=em)
                 try:
@@ -250,7 +266,10 @@ class Activity(commands.Cog):
         view.on_timeout = on_timeout
         
     @commands.command()
-    async def kill(self, ctx, mob):
+    async def kill(self, ctx, mob=None):
+        if mob is None:
+            await ctx.reply(f"You must enter a valild argument type to kill. Can be a spwaned mob or a user\n Use `m hlep kill` to get more info.")
+            return        
         if isinstance(mob, discord.Member):
             user = mob
             if not str(user.id) in data:
@@ -422,7 +441,7 @@ class Activity(commands.Cog):
         world = data[str(ctx.author.id)]["world"]
         places = [i for i in data[str(ctx.author.id)]["places"] if i in info[f"loc_type_{world}"]]
         if places == []:
-            await ctx.reply("You havent discovered that place yet. First discover the place using the ``m!adv`` command and if you are lucky you'll dicover new places.")
+            await ctx.reply("You havent discovered that place yet. First discover the place using the ``madv`` command and if you are lucky you'll dicover new places.")
             return
         if place is None:
             pages = len(places)
@@ -516,7 +535,7 @@ class Activity(commands.Cog):
            
     @commands.command()
     @commands.cooldown(1,15,type= commands.BucketType.user )
-    async def craft(self, ctx):
+    async def craft(self, ctx, craft_item= None):
         inv = data[str(ctx.author.id)]["inv"]
         all_items = list(info["craft"].keys())
         items= []
@@ -526,170 +545,211 @@ class Activity(commands.Cog):
         else:
             images = "https://github.com/happyharsh-codes/Minecord/blob/main/assets/craft_2x2/"
             items = ["plank", "crafting_table", "stick"]
-        i = 0
-        pages = len(items)
-        craft_value = 1
-        button_prev = Button(style=ButtonStyle.blurple,label="«",disabled=True, custom_id="button_prev")
-        button_next=Button(style=ButtonStyle.blurple,label="»",disabled=pages<=1,custom_id="button_next")
-        craft = Button(style=ButtonStyle.green, label="Craft",custom_id="craft")
-        select = Select(placeholder="Choose an option", max_values=1, options=[
-            SelectOption(label="Food",value="food"),
-            SelectOption(label="Stone", value="stone"),
-            SelectOption(label="Iron",value="iron"),
-            SelectOption(label="Gold", value="gold"),
-            SelectOption(label="Diamond",value="diamond"),
-            SelectOption(label="Leather",value="leather"),
-            SelectOption(label="Block",value="block"),
-            SelectOption(label="Tools",value="tools"),
-            SelectOption(label="Armour", value="armour"),
-            SelectOption(label="Fishing Rod",value="fishing_rod"),
-            SelectOption(label="Bow",value="bow")])
-        em = Embed(title="Crafting",description=f"Viewing recipe for {items[i].replace("_"," ").capitalize()}",color=Color.green())
-        em.set_image(url= images + f"{items[i]}.png?raw=true")
-        for item, value in info["craft"][items[i]].items():
-            emoji = info["id"][item]
-            name = item.replace("_"," ").capitalize()
-            if item not in inv or inv[item] < value:
-                em.description += f":x: {emoji} {name} x {value}"
-                craft.disabled = True
-                craft.style = ButtonStyle.red
-            else:
-                em.description += f":white_check_mark: {emoji} {name} x {value}"
-        em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
 
-        async def on_callback(interaction: discord.Interaction):
-            nonlocal craft_value, em, view, images, items, i
-            label = interaction.data["custom_id"]
-            if label == "craft":
+        if not craft_item is None:
+            craft = Button(style=ButtonStyle.green, label="Craft",custom_id="craft")
+            em = Embed(title="Crafting",description=f"Viewing recipe for {craft_item.replace("_"," ").capitalize()}",color=Color.green())
+            em.set_image(url= images + f"{craft_item}.png?raw=true")
+            for item, value in info["craft"][craft_item].items():
+                emoji = info["id"][item]
+                name = item.replace("_"," ").capitalize()
+                if item not in inv or inv[item] < value:
+                    em.description += f":x: {emoji} {name} x {value}"
+                    craft.disabled = True
+                    craft.style = ButtonStyle.red
+                else:
+                    em.description += f":white_check_mark: {emoji} {name} x {value}"
+            em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+            async def on_callback(interaction):
                 log_cmd(ctx, "craft")
-                for item, value in info["craft"][items[i]].items():
+                for item, value in info["craft"][craft_item].items():
                     await add_item(ctx, ctx.author.id, item, -value)
                 if items[i] in info["tools"]:
-                    data[str(ctx.author.id)]["tools"].update({items[i]: info["tools"][items[i]]})
+                    data[str(ctx.author.id)]["tools"].update({craft_item: info["tools"][items]})
                 else:
                     if items[i] in info["armour"]:
-                        craft_value = info["armour"][items[i]]
-                    elif items[i] == "plank" or items[i] == "stick" or "stair" in items[i]:
+                        craft_value = info["armour"][craft_item]
+                    elif items[i] == "plank" or craft_item == "stick" or "stair" in craft_item:
                         craft_value = 4
-                    await add_item(ctx, ctx.author.id, items[i], craft_value)
+                    await add_item(ctx, ctx.author.id, craft_item, craft_value)
+                craft.disabled = True
+                em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+                await interaction.response.edit_message(embed=em,view=None)
+                if craft_item in info["tools"] or items[i] in info["armour"]:
+                    await ctx.reply(embed=Embed(title=f"You successfully crafted {craft_item.replace("_"," ").capitalize()}", description=f"You recieved : \n {info["id"][craft_item]} {items[i].replace("_"," ").capitalize()}",color=Color.green()).set_footer(text=f"Crafted by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
+                else:
+                    await ctx.reply(embed=Embed(title=f"You successfully crafted {craft_item.replace("_"," ").capitalize()}", description=f"You recieved : \n {info["id"][craft_item]} {craft_item.replace("_"," ").capitalize()} x {craft_value}",color=Color.green()).set_footer(text=f"Crafted by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
+                return
+            async def on_timeout():
+                craft.disabled = True
+                em.color = Color.greyple()
+                await msg.edit(embed=em,view=view)
+
+            view = View(timeout=30)
+            view.add_item(craft)
+            msg = await ctx.reply(embed= em, view = view)
+            craft.callback = on_callback
+            view.on_timeout = on_timeout
+        else:
+            i = 0
+            pages = len(items)
+            craft_value = 1
+            button_prev = Button(style=ButtonStyle.blurple,label="«",disabled=True, custom_id="button_prev")
+            button_next=Button(style=ButtonStyle.blurple,label="»",disabled=pages<=1,custom_id="button_next")
+            craft = Button(style=ButtonStyle.green, label="Craft",custom_id="craft")
+            select = Select(placeholder="Choose an option", max_values=1, options=[
+                SelectOption(label="Food",value="food"),
+                SelectOption(label="Stone", value="stone"),
+                SelectOption(label="Iron",value="iron"),
+                SelectOption(label="Gold", value="gold"),
+                SelectOption(label="Diamond",value="diamond"),
+                SelectOption(label="Leather",value="leather"),
+                SelectOption(label="Block",value="block"),
+                SelectOption(label="Tools",value="tools"),
+                SelectOption(label="Armour", value="armour"),
+                SelectOption(label="Fishing Rod",value="fishing_rod"),
+                SelectOption(label="Bow",value="bow")])
+            em = Embed(title="Crafting",description=f"Viewing recipe for {items[i].replace("_"," ").capitalize()}",color=Color.green())
+            em.set_image(url= images + f"{items[i]}.png?raw=true")
+            for item, value in info["craft"][items[i]].items():
+                emoji = info["id"][item]
+                name = item.replace("_"," ").capitalize()
+                if item not in inv or inv[item] < value:
+                    em.description += f":x: {emoji} {name} x {value}"
+                    craft.disabled = True
+                    craft.style = ButtonStyle.red
+                else:
+                    em.description += f":white_check_mark: {emoji} {name} x {value}"
+            em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+
+            async def on_callback(interaction: discord.Interaction):
+                nonlocal craft_value, em, view, images, items, i
+                label = interaction.data["custom_id"]
+                if label == "craft":
+                    log_cmd(ctx, "craft")
+                    for item, value in info["craft"][items[i]].items():
+                        await add_item(ctx, ctx.author.id, item, -value)
+                    if items[i] in info["tools"]:
+                        data[str(ctx.author.id)]["tools"].update({items[i]: info["tools"][items[i]]})
+                    else:
+                        if items[i] in info["armour"]:
+                            craft_value = info["armour"][items[i]]
+                        elif items[i] == "plank" or items[i] == "stick" or "stair" in items[i]:
+                            craft_value = 4
+                        await add_item(ctx, ctx.author.id, items[i], craft_value)
+                    button_next.disabled = True
+                    button_prev.disabled = True
+                    craft.disabled = True
+                    em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+                    await interaction.response.edit_message(embed=em,view=view)
+                    if items[i] in info["tools"] or items[i] in info["armour"]:
+                        await ctx.reply(embed=Embed(title=f"You successfully crafted {items[i].replace("_"," ").capitalize()}", description=f"You recieved : \n {info["id"][items[i]]} {items[i].replace("_"," ").capitalize()}",color=Color.green()).set_footer(text=f"Crafted by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
+                    else:
+                        await ctx.reply(embed=Embed(title=f"You successfully crafted {items[i].replace("_"," ").capitalize()}", description=f"You recieved : \n {info["id"][items[i]]} {items[i].replace("_"," ").capitalize()} x {craft_value}",color=Color.green()).set_footer(text=f"Crafted by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
+                    return
+                elif label == "button_prev":
+                    i -= 1
+                else:
+                    i += 1
+                button_prev.disabled = i == 0
+                button_next.disabled = i == pages-1
+                craft.disabled = False
+                craft.style = ButtonStyle.green
+                em.description = f"Viewing recipe for {items[i].replace("_"," ").capitalize()}"
+                em.set_image(url= images + f"{items[i]}.png?raw=true")
+                for item, value in info["craft"][items[i]].items():
+                    emoji = info["id"][item]
+                    name = item.replace("_"," ").capitalize()
+                    if item not in inv or inv[item] < value:
+                        em.description += f"\n:x: {emoji} {name} x {value}"
+                        craft.disabled = True
+                        craft.style = ButtonStyle.red
+                    else:
+                        em.description += f"\n:white_check_mark: {emoji} {name} x {value}"
+                em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+                await interaction.response.edit_message(embed=em,view=view)
+
+            async def on_select(interaction: discord.Interaction):
+                value = interaction.data["values"][0]
+                nonlocal i, items, pages
+                items = []
+                i = 0
+                if value in ["food","tools","armour","block"]:
+                    for j in all_items:
+                        if j in info[value]:
+                            items.append(j)
+                elif value == "fishing_rod":
+                    items = ["fishing_rod"]
+                elif value == "bow":
+                    items = ["bow"]
+                else:
+                    for j in all_items:
+                        if value in j:
+                            items.append(j)
+                pages = len(items)
+                button_prev.disabled = i == 0
+                button_next.disabled = i == pages-1
+                craft.disabled = False
+                craft.style = ButtonStyle.green
+                em.description = f"Viewing recipe for {items[i].replace("_"," ").capitalize()}"
+                em.set_image(url= images + f"{items[i]}.png?raw=true")
+                for item, value in info["craft"][items[i]].items():
+                    emoji = info["id"][item]
+                    name = item.replace("_"," ").capitalize()
+                    if item not in inv or inv[item] < value:
+                        em.description += f"\n:x: {emoji} {name} x {value}"
+                        craft.disabled = True
+                        craft.style = ButtonStyle.red
+                    else:
+                        em.description += f"\n:white_check_mark: {emoji} {name} x {value}"
+                em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
+                await interaction.response.edit_message(embed=em,view=view)
+
+            async def on_timeout():
                 button_next.disabled = True
                 button_prev.disabled = True
                 craft.disabled = True
-                em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
-                await interaction.response.edit_message(embed=em,view=view)
-                if items[i] in info["tools"] or items[i] in info["armour"]:
-                    await ctx.reply(embed=Embed(title=f"You successfully crafted {items[i].replace("_"," ").capitalize()}", description=f"You recieved : \n {info["id"][items[i]]} {items[i].replace("_"," ").capitalize()}",color=Color.green()).set_footer(text=f"Crafted by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
-                else:
-                    await ctx.reply(embed=Embed(title=f"You successfully crafted {items[i].replace("_"," ").capitalize()}", description=f"You recieved : \n {info["id"][items[i]]} {items[i].replace("_"," ").capitalize()} x {craft_value}",color=Color.green()).set_footer(text=f"Crafted by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
-                return
-            elif label == "button_prev":
-                i -= 1
-            else:
-                i += 1
-            button_prev.disabled = i == 0
-            button_next.disabled = i == pages-1
-            craft.disabled = False
-            craft.style = ButtonStyle.green
-            em.description = f"Viewing recipe for {items[i].replace("_"," ").capitalize()}"
-            em.set_image(url= images + f"{items[i]}.png?raw=true")
-            for item, value in info["craft"][items[i]].items():
-                emoji = info["id"][item]
-                name = item.replace("_"," ").capitalize()
-                if item not in inv or inv[item] < value:
-                    em.description += f"\n:x: {emoji} {name} x {value}"
-                    craft.disabled = True
-                    craft.style = ButtonStyle.red
-                else:
-                    em.description += f"\n:white_check_mark: {emoji} {name} x {value}"
-            em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
-            await interaction.response.edit_message(embed=em,view=view)
+                em.color = Color.greyple()
+                await msg.edit(embed=em,view=view)
 
-        async def on_select(interaction: discord.Interaction):
-            value = interaction.data["values"][0]
-            nonlocal i, items, pages
-            items = []
-            i = 0
-            if value in ["food","tools","armour","block"]:
-                for j in all_items:
-                    if j in info[value]:
-                        items.append(j)
-            elif value == "fishing_rod":
-                items = ["fishing_rod"]
-            elif value == "bow":
-                items = ["bow"]
-            else:
-                for j in all_items:
-                    if value in j:
-                        items.append(j)
-            pages = len(items)
-            button_prev.disabled = i == 0
-            button_next.disabled = i == pages-1
-            craft.disabled = False
-            craft.style = ButtonStyle.green
-            em.description = f"Viewing recipe for {items[i].replace("_"," ").capitalize()}"
-            em.set_image(url= images + f"{items[i]}.png?raw=true")
-            for item, value in info["craft"][items[i]].items():
-                emoji = info["id"][item]
-                name = item.replace("_"," ").capitalize()
-                if item not in inv or inv[item] < value:
-                    em.description += f"\n:x: {emoji} {name} x {value}"
-                    craft.disabled = True
-                    craft.style = ButtonStyle.red
-                else:
-                    em.description += f"\n:white_check_mark: {emoji} {name} x {value}"
-            em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
-            await interaction.response.edit_message(embed=em,view=view)
+            view = View(timeout=30)
+            view.add_item(button_prev)
+            view.add_item(craft)
+            view.add_item(button_next)
+            if "crafting_table" in data[str(ctx.author.id)]["inv"]:
+                view.add_item(select)
 
-        async def on_timeout():
-            button_next.disabled = True
-            button_prev.disabled = True
-            craft.disabled = True
-            em.color = Color.greyple()
-            await msg.edit(embed=em,view=view)
+            msg = await ctx.reply(embed= em, view = view)
 
-        view = View(timeout=30)
-        view.add_item(button_prev)
-        view.add_item(craft)
-        view.add_item(button_next)
-        if "crafting_table" in data[str(ctx.author.id)]["inv"]:
-            view.add_item(select)
+            button_prev.callback = on_callback
+            button_next.callback = on_callback
+            craft.callback = on_callback
+            select.callback = on_select
 
-        msg = await ctx.reply(embed= em, view = view)
-
-        button_prev.callback = on_callback
-        button_next.callback = on_callback
-        craft.callback = on_callback
-        select.callback = on_select
-
-        view.on_timeout = on_timeout
+            view.on_timeout = on_timeout
     
     @commands.command(aliases=["loc"] )     
     async def location(self, ctx):
         loc = data[str(ctx.author.id)]["world"]
         loc_sub = data[str(ctx.author.id)]["location"]
-        em = Embed(title=f"{ctx.author.name}'s Location", description=f"World : {loc.capitalize()}\nLocation : {loc_sub.capitalize()}\nUse the ``m!go`` command to travel diffrent places", colour = discord.Colour.blue())
+        em = Embed(title=f"{ctx.author.name}'s Location", description=f"World : {loc.capitalize()}\nLocation : {loc_sub.capitalize()}\nUse the ``mgo`` command to travel diffrent places", colour = discord.Colour.blue())
         await ctx.reply(embed=em)
     
     @commands.command()
     async def throw(self, ctx, item, value):
-      with open("data.json","r")as f:
-        profile = json.load(f)
-        inv = profile[str(ctx.author.id)]["inv"]
-      if not item in inv:
-        await ctx.send("The item u r looking for isn't in your inventory.")
-        return
-      if value == "max" or value == "all":
-        profile[str(ctx.author.id)]["inv"].pop(item)
-      else:
-        try:
-          value = int(value)
-          await add_item(ctx, ctx.author.id, item, value)
-        except:
-          await ctx.send("Amount can be ``max``, ``all`` or an integer only")
-          return
-      with open("data.json", "w") as f:
-        json.dump(profile, f, indent=4)
-      await ctx.send("Item thrown from inventory")
+        if not item in data[str(ctx.author.id)]["inv"]:
+            await ctx.send("The item u r looking for isn't in your inventory.")
+            return
+        if value == "max" or value == "all":
+            data[str(ctx.author.id)]["inv"].pop(item)
+        else:
+            try:
+                value = int(value)
+                data[str(ctx.author.id)]["inv"] -= value
+            except:
+                await ctx.send("Amount can be ``max``, ``all`` or an integer only")
+                return
+        await ctx.send("Item thrown from inventory")
 
     @commands.command()
     async def use(self, ctx, item):
@@ -714,7 +774,7 @@ class Activity(commands.Cog):
         
     @commands.command()
     async def hi(self, ctx):
-        await ctx.send("Hello I am Minecord, Minecraft Discord Bot ,My prefix is ``m!``, start playing!")
+        await ctx.send("Hello I am Minecord, Minecraft Discord Bot ,My prefix is ``m``, start playing!")
         
     @commands.command()
     async def invite(self, ctx):
@@ -1002,8 +1062,8 @@ class Activity(commands.Cog):
     async def fish(self, ctx):
         """Fishing command - complete"""
         if not inv_searcher(ctx, "fishing_rod"):
-          await ctx.reply("You don't even own a ``fishing rod``")
-          return
+            await ctx.reply("You don't even own a ``fishing rod``")
+            return
         chance = random.randint(1,100)
         quantity = random.randint(1, 3)
         log_cmd(ctx,"fish")
@@ -1120,7 +1180,7 @@ class Activity(commands.Cog):
                     else:
                         for item, val in info["build"][items[indexx]].items():
                             await add_item(ctx, ctx.author.id, item, -val)
-                    await ctx.send(f"<@{ctx.author.id} you successfully built {name}\nUse m!profile command to see it on your profile")
+                    await ctx.send(f"<@{ctx.author.id} you successfully built {name}\nUse mprofile command to see it on your profile")
                     log_cmd(ctx,"build")
                     return
                 elif button == "button_prev":
@@ -1258,6 +1318,11 @@ class Activity(commands.Cog):
         log_cmd(ctx,"crop")
         await ctx.send(embed=em)
     
+    @commands.command()
+    @commands.cooldown(1, 10, type = commands.BucketType.user)
+    async def walk(self, ctx):
+        pass
+
 async def setup(bot):
     await bot.add_cog(Activity(bot))
     print("setup run")

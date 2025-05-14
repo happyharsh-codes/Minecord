@@ -577,7 +577,10 @@
     },
     "tips": [
         "Join Minecord Official Server for exciting rewards.",
-        "Always keep an eye on your health and hunger."
+        "Always keep an eye on your health and hunger.",
+        "Make sure your Tools and Armour dont break in the middle of a fight 😝😝",
+        "Quickly defeat the Ender Dragon and recieve your auspicius rewards at Minecord Official Server",
+        "You must be in same location with an user to kill him. 😜😝"
     ],
     "craft": {
         "stick": {"plank":2},
@@ -647,7 +650,7 @@
         "witch's_hut": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcKlRxIXyK2bZWlVxpcuB6qnBum1xU8IlIOA&s",
         "woodland_mansion": "https://staticg.sportskeeda.com/editor/2022/06/e8aff-16561255388345-1920.jpg"
     }, 
-    "loc_type_over": ["village", "ravage", "cave", "desert_temple", "igloo", "jungle_temple", "underground_cave", "mineshaft", "shipwreck", "ocean", "pillager_tower", "witch's_hut", "woodland_mansion", "ruined_portal", "nether_portal", "strong_hold", "end_portal"],
+    "loc_type_over": ["village", "ravage", "cave", "desert_temple", "igloo", "jungle_temple", "underground_cave", "mineshaft", "shipwreck", "ocean", "pillager_tower", "witch's_hut", "woodland_mansion", "ruined_portal", "nether_portal", "strong_hold", "end_portal", "burial_treasure"],
     "loc_type_nether": ["nether_foretress", "bastion-remnant", "crimson_forest", "wrapped_forest", "ruined_portal", "nether_portal"],
     "loc_type_end": ["end_portal", "end_city", "end_gateway", "end_ship"],
     "mob_health":{

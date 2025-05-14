@@ -1,1 +1,28 @@
-{}
+{
+    "894072003533877279": {
+        "name": "happyharsh.",
+        "diff": "peaceful",
+        "inv": {
+            "log": 3,
+            "plank": 4
+        },
+        "tools": {},
+        "armour": {},
+        "location": "home",
+        "world": "over",
+        "inv_size": 25,
+        "level": 0,
+        "xp": 71,
+        "health": 100,
+        "food": 100,
+        "max_health": 100,
+        "builds": [],
+        "places": {},
+        "adv": [],
+        "log": {
+            "chop": 2,
+            "craft": 1,
+            "hunt": 1
+        }
+    }
+}

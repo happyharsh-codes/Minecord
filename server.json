@@ -1,1 +1,17 @@
-{}
+{
+    "909132093953568768": {
+    "name": "The Unique Universe",
+    "allowed_channels": [1372004077679939655],
+    "mobs":{},
+    "loot":{},
+    "premium": false, 
+    "invite_link": "idk"}, 
+
+    "908337866793426964": {
+        "name": "Minecord Official Server", 
+        "allowed_channels": [1372004077679939655], 
+        "premium": false, 
+        "invite_link": "idk"}
+
+
+}

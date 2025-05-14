@@ -16,7 +16,7 @@ def run_web():
     
 load_dotenv()
 intents = discord.Intents(messages = True, guilds = True, dm_messages = True, members = True, presences = True, dm_reactions = True, reactions = True, emojis = True, emojis_and_stickers = True, message_content = True) 
-client = commands.Bot(command_prefix= 'm!', case_insensitive=True, help_command=None, intents = intents )
+client = commands.Bot(command_prefix= ['m ', "m"], case_insensitive=True, help_command=None, intents = intents )
 event = Events(client)
 
 #-----On Ready-----#
@@ -65,7 +65,7 @@ async def loop():
             data[id]["health"] += random.randint(1,10)
             if data[id]["health"] >= data[id]["max_health"]:
                 data[id]["health"] = data[id]["max_health"]
-        elif 0 < data[id]["food"] < 30:
+        elif 0 < data[id]["food"] < 10:
             data[id]["food"] -= random.randint(1,7)
             data[id]["health"] -= random.randint(1,10)
             try:
@@ -99,7 +99,7 @@ async def dumping_loop():
 #-----Events-----#
 client.event(event.on_message)
 client.event(event.on_guild_join)
-client.event(event.on_guild_leave)
+client.event(event.on_guild_remove)
 client.event(event.on_command_error)
 client.event(event.on_command_completion)
 client.event(event.on_disconnect)

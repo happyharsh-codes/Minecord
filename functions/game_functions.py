@@ -89,12 +89,16 @@ async def despawn():
     for id in server:
         for mob in server[id]:
             if datetime.now() >= server[id][mob][1] + timedelta(minutes=2):
-                await server[id][mob][2].send(f"Oho a {mob.replace("_"," ").capitalize()} despawned")
-                server[id].pop(mob)
-                if id == {}:
-                    server.pop(id)
-                return
-        
+                try:
+                    await server[id][mob][2].send(f"Oho a {mob.replace("_"," ").capitalize()} despawned")
+                except:
+                    pass #handelling if bot has been kicked out of server
+                    server[id].pop(mob)
+                    if id == {}:
+                        server.pop(id)
+                    return
+
+            
 async def xp_manager(ctx, xp_add):
     """Increases or decreases xp"""
     xp = data[str(ctx.author.id)]["xp"]
