@@ -10,7 +10,7 @@ class Events:
     def __init__(self, client):
         self.client = client
 
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if message.author == self.client.user:
             return
         try:
@@ -42,9 +42,9 @@ class Events:
                 else:
                     await message.channel.send(message.content)        
                     return
-            with open("channels.json", "r") as f:
+            with open("server.json", "r") as f:
                 data = json.load(f)
-                allowed_channels = data.get(str(message.guild.id))
+                allowed_channels = data.get(str(message.guild.id)).get("allowed_channels")
                 if ( allowed_channels != []):
                     if message.channel.id not in allowed_channels:
                         print("Wrong channel")
@@ -52,13 +52,13 @@ class Events:
                     
             if self.client.user.mention in message.content: 
                     if "activate" in message.content.lower():
-                        try:
-                            data[str(message.guild.id)].append(message.channel.id)
-                        except:
-                            data[str(message.guild.id)] = [message.channel.id]
-                        with open("channels.json", "w") as f:
-                            json.dump(data, f)
-                        await message.channel.send(embed=discord.Embed(title="Channel Activated",description=f"<#{message.channel.id}> was succesfully activated !! Start playing Minecord now.\n\n Use {self.client.user.mention} activate to use me in other channels", color= discord.Colour.green()))
+                        if message.channel.permissions_for(message.author).manage_channels:
+                            data[str(message.guild.id)]["allowed_channels"].append(message.channel.id)
+                            with open("server.json", "w") as f:
+                                json.dump(data, f)
+                            await message.channel.send(embed=discord.Embed(title="Channel Activated",description=f"<#{message.channel.id}> was succesfully activated !! Start playing Minecord now.\n\n Use {self.client.user.mention} activate to use me in other channels", color= discord.Colour.green()))
+                        else:
+                            await message.channel.send("Ayoo user you need `manage channels` permission to user this command.")
                         return
                     em = discord.Embed(title= 'Minecord Bot', description= "Hi I am Minecord, The Discord Minecraft bot, my prefix is `m`", colour= discord.Colour.green())
                     em.set_thumbnail(url = self.client.user.avatar)
@@ -69,15 +69,13 @@ class Events:
                     return
             if not message.content.lower().startswith(("m", "m ")):
                 return
-            cmd = message.content.lower().replace("m", "")
-            cmd = cmd.replace("m ", "")
-            print(f"processing cmd {cmd}")
-            if 'start' in cmd or 'help' in cmd:
+            print(f"processing cmd {message.content}")
+            if 'start' in message.content or 'help' in message.content:
                 await self.client.process_commands(message)    
             if not has_profile(message.author.id):
-                await message.channel.send(f"{message.author.mention} you haven't created your profile yet.\nCreate your profile with the `start` command and start playing!")
+                await message.channel.send(f"{message.author.mention} you haven't created your profile yet.\nCreate your profile with the `m start` command and start playing!")
                 return
-            #await self.client.process_commands(message)
+            await self.client.process_commands(message)
         except Exception as e:
             print(e)
       
@@ -85,23 +83,15 @@ class Events:
         """Handling when Bot leaves a server"""
         print("left a server")
         user = self.client.get_user(894072003533877279)
-        for channel in guild.channels:
-            if isinstance(channel, discord.TextChannel):
-                try:
-                    invite = await channel.create_invite(max_age=0, max_uses=0)
-                    break
-                except:
-                    continue
-        else:
-            invite = "No invite perms"
+        with open("server.json", "r") as f:
+            data = json.load(f)
+        invite = data[str(guild.id)]["invite_link"]
         if user != None:
             try:
                 await user.send(f"Minecord left a server {guild.name}\n{invite}")
             except:
                 pass
-        with open("channels.json", "r") as f:
-            data = json.load(f)
-        with open("channels.json", "w") as f:
+        with open("server.json", "w") as f:
             data.pop(str(guild.id))
             json.dump(data, f, indent=4)
      
@@ -136,10 +126,10 @@ class Events:
             await me.send(embed=msg)
         except:
             pass
-        with open("channels.json", "r") as f:
+        with open("server.json", "r") as f:
             data = json.load(f)
-        with open("channels.json", "w") as f:
-            data[str(guild.id)] = []
+        with open("server.json", "w") as f:
+            data[str(guild.id)] = {"name": guild.name, "invite_link": str(invite.url), "premium": False, "mob": {}, "places": {}, "allowed_channels":[]}
             json.dump(data, f, indent=4)
         
     

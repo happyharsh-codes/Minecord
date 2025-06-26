@@ -547,6 +547,10 @@ class Activity(commands.Cog):
             items = ["plank", "crafting_table", "stick"]
 
         if not craft_item is None:
+            craft_item = craft_item.lower()
+            if craft_item not in info["craft"]:
+                await ctx.send("Oho that isnt a valid item. Please ender a valid item id.")
+                return
             craft = Button(style=ButtonStyle.green, label="Craft",custom_id="craft")
             em = Embed(title="Crafting",description=f"Viewing recipe for {craft_item.replace("_"," ").capitalize()}",color=Color.green())
             em.set_image(url= images + f"{craft_item}.png?raw=true")
@@ -564,19 +568,19 @@ class Activity(commands.Cog):
                 log_cmd(ctx, "craft")
                 for item, value in info["craft"][craft_item].items():
                     await add_item(ctx, ctx.author.id, item, -value)
-                if items[i] in info["tools"]:
+                if craft_item in info["tools"]:
                     data[str(ctx.author.id)]["tools"].update({craft_item: info["tools"][items]})
                 else:
-                    if items[i] in info["armour"]:
+                    if craft_item in info["armour"]:
                         craft_value = info["armour"][craft_item]
-                    elif items[i] == "plank" or craft_item == "stick" or "stair" in craft_item:
+                    elif craft_item == "plank" or craft_item == "stick" or "stair" in craft_item:
                         craft_value = 4
                     await add_item(ctx, ctx.author.id, craft_item, craft_value)
                 craft.disabled = True
                 em.set_footer(text=f"Requested by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar)
                 await interaction.response.edit_message(embed=em,view=None)
-                if craft_item in info["tools"] or items[i] in info["armour"]:
-                    await ctx.reply(embed=Embed(title=f"You successfully crafted {craft_item.replace("_"," ").capitalize()}", description=f"You recieved : \n {info["id"][craft_item]} {items[i].replace("_"," ").capitalize()}",color=Color.green()).set_footer(text=f"Crafted by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
+                if craft_item in info["tools"] or craft_item in info["armour"]:
+                    await ctx.reply(embed=Embed(title=f"You successfully crafted {craft_item.replace("_"," ").capitalize()}", description=f"You recieved : \n {info["id"][craft_item]} {craft_item.replace("_"," ").capitalize()}",color=Color.green()).set_footer(text=f"Crafted by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
                 else:
                     await ctx.reply(embed=Embed(title=f"You successfully crafted {craft_item.replace("_"," ").capitalize()}", description=f"You recieved : \n {info["id"][craft_item]} {craft_item.replace("_"," ").capitalize()} x {craft_value}",color=Color.green()).set_footer(text=f"Crafted by {ctx.author.name} at  {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S')}", icon_url=ctx.author.avatar))
                 return
@@ -775,6 +779,10 @@ class Activity(commands.Cog):
     @commands.command()
     async def hi(self, ctx):
         await ctx.send("Hello I am Minecord, Minecraft Discord Bot ,My prefix is ``m``, start playing!")
+        embed = discord.Embed(title="Here's a GIF!", description="Enjoy this animation 🎉")
+        embed.set_image(url="https://media.giphy.com/media/l0MYC0LajbaPoEADu/giphy.gif")
+        await ctx.send(embed=embed)
+
         
     @commands.command()
     async def invite(self, ctx):
